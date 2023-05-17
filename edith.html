@@ -40,9 +40,7 @@
 		}
 
 		#outimg {
-/*			display: flex;
-			align-items: center;
-*/			flex-grow: 1;
+			flex-grow: 1;
 			min-width: 0;
 			flex-shrink: 1;
 			object-position: center;
@@ -76,24 +74,20 @@
 			border-radius: 50%;
 			background: dimgrey;
 			opacity: 50%;
-
-
 			border: none;
 			color: white;
 			text-align: center;
 			text-decoration: none;
 			display: inline-block;
 			font-size: 16px;
+			display: inline-flex;
 		}
 
 		#reset_input_button::after {
-			display: inline-flex;
-		    justify-content: center; /* center the content horizontally */
-		    align-items: center; /* center the content vertically */
-/*			display: inline-block;*/
+			display: inline-block;
 			content: "\00d7";
-/*			top: -.5px;*/
-/*			position: relative;*/
+			top: -.5px;
+			position: relative;
 		}
 
 		#reset_input_button:hover {
@@ -170,17 +164,11 @@
 		}
 
 		var original_image
-		var dithered_image
 
 		window.onload = function () {
 			document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
 			document.getElementById("drop-zone").addEventListener("drop", dropHandler)
-
-			document.getElementById("options").addEventListener("change", () => process(original_image))
-			// document.getElementById("auto_threshold_box").addEventListener("change", function (event) {
-			// 	document.getElementById("threshold_slider").disabled = this.checked;
-			// })
-
+			document.getElementById("options").addEventListener("change", () => process())
 			document.getElementById("reset_input_button").addEventListener("click", unloadImage)
 		}
 
@@ -189,7 +177,6 @@
 		}
 
 		function dropHandler(ev) {
-			console.log("dropped")
 			ev.preventDefault();
 
 			[...ev.dataTransfer.items].forEach((item, i) =>
@@ -199,103 +186,32 @@
 						var fr = new FileReader();
 				        fr.onload = function () {
 				        	loadImage(fr.result)
-				            document.getElementById("inimg").src = fr.result;
 				        }
 				        fr.readAsDataURL(file);
 					}
 				})
 		}
 
-		function process(image) {
-			if (image == null)
+		function process() {
+			if (original_image == null)
 				return
+
+			// resize
 			var size = parseInt(document.getElementById("size_input").value)
-			dithered_image = image.clone()
-			image = dithered_image
+			var image = original_image.clone()
+
 			if (isNaN(size)) size = 300
-			if  (size > Math.max(image.bitmap.width, image.bitmap.height)) size = Math.max(image.bitmap.width, image.bitmap.height)
+			if  (size > Math.max(image.bitmap.width, image.bitmap.height) || size <= 0)
+				size = Math.max(image.bitmap.width, image.bitmap.height)
 			image.scaleToFit(size, size)
+			document.getElementById("size_input").value = size
 			image.greyscale();
 
 			kernel = dither_kernels[document.getElementById("method_dropdown").value]
-			
 
-			// not used
-			function find_threshold(image) {
-				h = new Array(256).fill(0)
-				image.scan(0, 0, image.bitmap.width, image.bitmap.width, (x,y,idx) => h[image.bitmap.data[idx]]++)
 
-				sum = 0;
-				for (var t=0 ; t<256 ; t++) sum += t * h[t];
-
-				var_max = 0
-				wb = 0, wf = 0
-				sum_b = 0
-				total = image.bitmap.width * image.bitmap.height
-				for (var t = 0; t < h.length; t++) {
-				   wb += h[t];               // Weight Background
-				   if (wb == 0) continue;
-
-				   wf = total - wb;                 // Weight Foreground
-				   if (wf == 0) break;
-
-				   sum_b += t * h[t]
-
-				   mb = sum_b / wb;            // Mean Background
-				   mf = (sum - sum_b) / wf;    // Mean Foreground
-
-				   // Calculate Between Class Variance
-				   variance = wb * wf * (mb - mf) * (mb - mf);
-
-				   // Check if new maximum found
-				   if (variance > var_max) {
-				      var_max = variance
-				      threshold = t;
-				   }
-				}
-
-				return threshold
-			}
-
-			function dither(image, kernel) {
-				var kernel_rows = Math.max(...kernel.map(el => el[1]))+1
-
-				var e = []
-				for (var i = 0; i < kernel_rows; i++)
-					e.push(new Array(image.bitmap.width).fill(0.))
-
-				for (var row = 0; row < image.bitmap.height; row++) {
-					e[e.length] = new Array(image.bitmap.width).fill(0.)
-					for (var col = 0; col < image.bitmap.width; col++) {
-						var color = image.getPixelColor(col, row) >> 8
-						color &= 0xFF
-
-						var err
-						if (color+e[0][col] > 127) {
-							image.setPixelColor(0xFFFFFFFF, col, row)
-							err = color+e[0][col]-255
-						} else {
-							image.setPixelColor(0x000000FF, col, row) 
-							err = color+e[0][col]
-						}
-
-						for (k of kernel) {
-							e[k[1]][col+k[0]] += k[2] * err
-						}
-					}
-					e.shift()
-				}
-			}
-
-			// var threshold
-			// if (document.getElementById("auto_threshold_box").checked) {
-			// 	threshold = find_threshold(image)
-			// 	threshold=127
-			// 	document.getElementById("threshold_slider").value = threshold
-			// } else
-			// 	threshold = document.getElementById("threshold_slider").value
+			// in-place
 			dither(image, kernel)
-
 			
 			image.getBase64Async(Jimp.AUTO).then((newImg) => {
 				document.getElementById("outimg").src = newImg
@@ -303,20 +219,86 @@
 		}
 
 		function loadImage(src) {
+            document.getElementById("inimg").src = src;
 			Jimp.read(src).then(image => {original_image=image;
 										  document.getElementById("drop_here_text").classList.add("hidden"); 
 										  document.getElementById("reset_input_button").disabled=false;
-										  process(original_image)})
+										  process()})
 		}
 
 		function unloadImage() {
+			original_image=null;
 			document.getElementById("outimg").src = ""
 			document.getElementById("inimg").src = ""
-			original_image=null;
-			dithered_image=null;
 			document.getElementById("drop_here_text").classList.remove("hidden");
 		  	document.getElementById("reset_input_button").disabled=true;
 		}
+
+		function dither(image, kernel) {
+			var kernel_rows = Math.max(...kernel.map(el => el[1]))+1
+
+			var e = []
+			for (var i = 0; i < kernel_rows; i++)
+				e.push(new Array(image.bitmap.width).fill(0.))
+
+			for (var row = 0; row < image.bitmap.height; row++) {
+				e[e.length] = new Array(image.bitmap.width).fill(0.)
+				for (var col = 0; col < image.bitmap.width; col++) {
+					var color = image.getPixelColor(col, row) >> 8
+					color &= 0xFF
+
+					var err
+					if (color+e[0][col] > 127) {
+						image.setPixelColor(0xFFFFFFFF, col, row)
+						err = color+e[0][col]-255
+					} else {
+						image.setPixelColor(0x000000FF, col, row) 
+						err = color+e[0][col]
+					}
+
+					for (k of kernel) {
+						e[k[1]][col+k[0]] += k[2] * err
+					}
+				}
+				e.shift()
+			}
+		}
+
+		// function find_threshold(image) {
+		// 	h = new Array(256).fill(0)
+		// 	image.scan(0, 0, image.bitmap.width, image.bitmap.width, (x,y,idx) => h[image.bitmap.data[idx]]++)
+
+		// 	sum = 0;
+		// 	for (var t=0 ; t<256 ; t++) sum += t * h[t];
+
+		// 		var_max = 0
+		// 	wb = 0, wf = 0
+		// 	sum_b = 0
+		// 	total = image.bitmap.width * image.bitmap.height
+		// 	for (var t = 0; t < h.length; t++) {
+		// 	   wb += h[t];               // Weight Background
+		// 	   if (wb == 0) continue;
+
+		// 	   wf = total - wb;                 // Weight Foreground
+		// 	   if (wf == 0) break;
+
+		// 	   sum_b += t * h[t]
+
+		// 	   mb = sum_b / wb;            // Mean Background
+		// 	   mf = (sum - sum_b) / wf;    // Mean Foreground
+
+		// 	   // Calculate Between Class Variance
+		// 	   variance = wb * wf * (mb - mf) * (mb - mf);
+
+		// 	   // Check if new maximum found
+		// 	   if (variance > var_max) {
+		// 	   	var_max = variance
+		// 	   	threshold = t;
+		// 	   }
+		// 	}
+
+		// 	return threshold
+		// }
 	</script>
 </head>
 <body>
@@ -334,13 +316,8 @@
 					<option>jarvis-judice-ninke</option>
 					<option>stucki</option>
 					<option>shiau-fan</option>
-
 				</select>
-<!-- 				<div style="display:flex">
-					<input type="range" min="1" max="255" value="50" class="slider" disabled=true id="threshold_slider">
-					<input type="checkbox" id="auto_threshold_box" checked=true>
-				</div>
--->				<input type="text" value="300" id="size_input">
+				<input type="text" value="300" id="size_input">
 				<button id="reload_button">Dither me!</button>
 			</div>
 		</div>
