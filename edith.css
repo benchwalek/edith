@@ -94,3 +94,20 @@ small {
 img[src=""] {
 	display: none;
 }
+
+#file_input {
+	display: none;
+}
+
+#file_input_label > label {
+	color: blue;
+	cursor: pointer;
+}
+
+#file_input_label > label:hover {
+	text-decoration: underline;
+}
+
+#options {
+	font-size: 11px;
+}

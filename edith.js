@@ -4,56 +4,56 @@
 // color dithering
 // more dither methods
 // interface:
-// select file
 // add exposure
 // srgb
+// style
 
 // format: rx, ry, weight
 let dither_kernels = {
 	"floyd-steinberg": 
 	[[ 1,0,7/16],
-		[-1,1,3/16],
-		[ 0,1,5/16],
-		[ 1,1,1/16]],
+	 [-1,1,3/16],
+	 [ 0,1,5/16],
+	 [ 1,1,1/16]],
 	"shiau-fan": 
 	[[ 1,0,8/16],
-		[-3,1,1/16],
-		[-2,1,1/16],
-		[-1,1,2/16],
-		[ 0,1,4/16]],
+	 [-3,1,1/16],
+	 [-2,1,1/16],
+	 [-1,1,2/16],
+	 [ 0,1,4/16]],
 	"atkinson": 
 	[[ 1,0,1/8],
-		[ 2,0,1/8],
-		[-1,1,1/8],
-		[ 0,1,1/8],
-		[ 1,1,1/8],
-		[ 0,2,1/8]],
+	 [ 2,0,1/8],
+	 [-1,1,1/8],
+	 [ 0,1,1/8],
+	 [ 1,1,1/8],
+	 [ 0,2,1/8]],
 	"jarvis-judice-ninke":
 	[[ 1,0,7/48],
-		[ 2,0,5/48],
-		[-2,1,3/48],
-		[-1,1,5/48],
-		[ 0,1,7/48],
-		[ 1,1,5/48],
-		[ 2,1,3/48],
-		[-2,2,1/48],
-		[-1,2,3/48],
-		[ 0,2,5/48],
-		[ 1,2,3/48],
-		[ 2,2,1/48]],
+	 [ 2,0,5/48],
+	 [-2,1,3/48],
+	 [-1,1,5/48],
+	 [ 0,1,7/48],
+	 [ 1,1,5/48],
+	 [ 2,1,3/48],
+	 [-2,2,1/48],
+	 [-1,2,3/48],
+	 [ 0,2,5/48],
+	 [ 1,2,3/48],
+	 [ 2,2,1/48]],
 	"stucki":
 	[[ 1,0,8/42],
-		[ 2,0,4/42],
-		[-2,1,2/42],
-		[-1,1,4/42],
-		[ 0,1,8/42],
-		[ 1,1,4/42],
-		[ 2,1,2/42],
-		[-2,2,1/42],
-		[-1,2,2/42],
-		[ 0,2,4/42],
-		[ 1,2,2/42],
-		[ 2,2,1/42]],
+	 [ 2,0,4/42],
+	 [-2,1,2/42],
+	 [-1,1,4/42],
+	 [ 0,1,8/42],
+	 [ 1,1,4/42],
+	 [ 2,1,2/42],
+	 [-2,2,1/42],
+	 [-1,2,2/42],
+	 [ 0,2,4/42],
+	 [ 1,2,2/42],
+	 [ 2,2,1/42]],
 }
 
 var original_image = null
@@ -63,6 +63,7 @@ window.onload = function () {
 	document.getElementById("drop-zone").addEventListener("drop", dropHandler)
 	document.getElementById("options").addEventListener("change", () => process())
 	document.getElementById("reset_input_button").addEventListener("click", unloadImage)
+	document.getElementById("file_input").addEventListener("change", openHandler)
 }
 
 function dragOverHandler(ev) {
@@ -78,6 +79,10 @@ function dropHandler(ev) {
 			loadImage(item.getAsFile())
 		}
 	})
+}
+
+function openHandler(ev) {
+	loadImage(this.files[0])
 }
 
 function process() {

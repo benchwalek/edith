@@ -12,19 +12,31 @@
 		<div id="vsplit">
 			<div class="box" id="drop-zone">
 				<img id="inimg">
-				<div id="drop_here_text">Drop image here <br><small>or <a href="#">select file.</a></small></div>
+				<div id="drop_here_text">
+					Drop image here <br>
+					<small>or <span id="file_input_label">
+						<label for="file_input">select file.</label>
+						<input id="file_input" type=file></input>
+					</span></small>
+				</div>
 				<button id="reset_input_button" disabled></button>
 			</div>
 			<div class="box" id="options">
-				<select name="method" id="method_dropdown">
-					<option>floyd-steinberg</option>
-					<option>atkinson</option>
-					<option>jarvis-judice-ninke</option>
-					<option>stucki</option>
-					<option>shiau-fan</option>
-				</select>
-				<input type="text" value="300" id="size_input">
-				<button id="reload_button">Dither me!</button>
+				<label>
+					Method
+					<select name="method" id="method_dropdown">
+						<option>floyd-steinberg</option>
+						<option>atkinson</option>
+						<option>jarvis-judice-ninke</option>
+						<option>stucki</option>
+						<option>shiau-fan</option>
+					</select>
+				</label>
+				<label>
+					Size
+					<input type="text" value="300" id="size_input">
+				</label>
+				<!-- <button id="reload_button">Dither me!</button> -->
 			</div>
 		</div>
 		<img id="outimg" src="">
