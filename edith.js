@@ -110,8 +110,10 @@ function process() {
 	ctx.drawImage(original_image, 0, 0, new_width, new_height)
 	image_data = ctx.getImageData(0, 0, new_width, new_height)
 
-	for (var i = 0; i < image_data.data.length; i++)
-		image_data.data[i] = (image_data.data[i] + image_data.data[i+1] + image_data.data[i+2])/3
+	for (var i = 0; i < image_data.data.length; i+=4)
+		image_data.data[i] = image_data.data[i+1] = image_data.data[i+2] = (image_data.data[i]
+																		  + image_data.data[i+1]
+																		  + image_data.data[i+2])/3
 
 	kernel = dither_kernels[document.getElementById("method_dropdown").value]
 
