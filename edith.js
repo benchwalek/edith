@@ -1,11 +1,10 @@
 // TODO
-// make implementation more flexible, for color dithering support
+// make implementation more flexible, for color dithering support: mono arrays, rgb arrays, drop alpha
 // multiple grey levels
 // color dithering
-// more dither methods
-// interface:
-// add exposure
-// srgb
+// canvas drawing instead of embed (performance?)
+// more dither methods: riemersma, ordered, blue noise, ordered+error diff, error diff w/ random element
+// add exposure compensation / contrast
 // style
 
 // format: rx, ry, weight
@@ -57,6 +56,16 @@ let dither_kernels = {
 }
 
 var original_image = null
+
+function srgbToLinear(s) {
+	s/=256
+	return (s <= .04045 ? s/12.92 : Math.pow(((s+0.055)/1.055), 2.4))*256
+}
+
+function linearToSrgb(l) {
+	l/=256
+	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 2.4) - 0.055)*256
+}
 
 window.onload = function () {
 	document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
@@ -117,10 +126,16 @@ function process() {
 
 	kernel = dither_kernels[document.getElementById("method_dropdown").value]
 
-	// in-place
+	image_data.inplaceMap = function(f) {
+								for (var i = 0; i < this.data.length; i++)
+									this.data[i] = i%4!=3 ? f(this.data[i]) : this.data[i]
+							}
 	image_data.width = new_width
 	image_data.height = new_height
+
+	image_data.inplaceMap(srgbToLinear)
 	dither(image_data, kernel)
+	image_data.inplaceMap(linearToSrgb)
 
 	ctx.putImageData(image_data,0,0)
 	document.getElementById("outimg").src = ctx.canvas.toDataURL()
