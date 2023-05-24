@@ -1,6 +1,13 @@
+:root {
+  --bg-color: #fffdf2;
+  --text-color: #000;
+  --accent-color: #ea3726;
+}
+
 body {
+	font-family: "EB Garamond";
 	margin: 0;
-	background-color: #5C4F3D;
+	background-color: #443;
 }
 #hsplit {
 	display: flex;
@@ -17,12 +24,11 @@ body {
 	display: flex;
 	flex-direction: column;
 	position: relative;
-	background-color: #5E8CA8;
+	background-color: var(--bg-color);
+	color: var(--text-color);
 	justify-content: center;
 	align-items: center;
-	color: whitesmoke;
-	font-size: 30px;
-	font-family: monospace;
+	font-size: 5vh;
 	flex-grow: 1;
 	flex-shrink: 1;
 	text-align: center;
@@ -30,11 +36,20 @@ body {
 
 #drop-zone {
 	min-height: 50%;
+	border-radius: 0px 0px 20px 0px;
+}
+#options {
+	font-size: 11px;
+	border-radius: 0px 20px 0px 0px;
 }
 
 #outimg {
+	background-color: var(--bg-color);
 	flex-grow: 1;
 	min-width: 0;
+	min-width: 100%;
+	max-width: 100%;
+	max-height: 100%;
 	flex-shrink: 1;
 	object-position: center;
 	object-fit: contain;
@@ -48,8 +63,8 @@ body {
 	min-height: 100%;
 	position: absolute;
 	object-fit: contain;
-	max-width: 100%;
-	max-height: 1005;
+	max-width: 80%;
+	max-height: 80%;
 	flex-grow: 1;
 	min-width: 0;
 	flex-shrink: 1;
@@ -65,10 +80,10 @@ small {
 	top: 1em;
 	font-size: 20px;
 	border-radius: 50%;
-	background: dimgrey;
+	background: var(--bg-color);
 	opacity: 50%;
 	border: none;
-	color: white;
+	color: var(--text-color);
 	text-align: center;
 	text-decoration: none;
 	display: inline-block;
@@ -100,14 +115,10 @@ img[src=""] {
 }
 
 #file_input_label > label {
-	color: blue;
+	color: var(--accent-color);
 	cursor: pointer;
 }
 
 #file_input_label > label:hover {
 	text-decoration: underline;
-}
-
-#options {
-	font-size: 11px;
 }
