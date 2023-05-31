@@ -6,6 +6,7 @@
 // more dither methods: riemersma, ordered, blue noise, ordered+error diff, error diff w/ random element
 // add exposure compensation / contrast
 // style
+// fix #inimg dimension change when adding image
 
 // format: rx, ry, weight
 let dither_kernels = {
@@ -57,15 +58,7 @@ let dither_kernels = {
 
 var original_image = null
 
-function srgbToLinear(s) {
-	s/=256
-	return (s <= .04045 ? s/12.92 : Math.pow(((s+0.055)/1.055), 2.4))*256
-}
 
-function linearToSrgb(l) {
-	l/=256
-	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 2.4) - 0.055)*256
-}
 
 window.onload = function () {
 	document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
@@ -119,25 +112,24 @@ function process() {
 	ctx.drawImage(original_image, 0, 0, new_width, new_height)
 	image_data = ctx.getImageData(0, 0, new_width, new_height)
 
-	for (var i = 0; i < image_data.data.length; i+=4)
-		image_data.data[i] = image_data.data[i+1] = image_data.data[i+2] = (image_data.data[i]
-																		  + image_data.data[i+1]
-																		  + image_data.data[i+2])/3
+	// for (var i = 0; i < image_data.data.length; i+=4)
+	// 	image_data.data[i] = image_data.data[i+1] = image_data.data[i+2] = (image_data.data[i]
+	// 																	  + image_data.data[i+1]
+	// 																	  + image_data.data[i+2])/3
 
 	kernel = dither_kernels[document.getElementById("method_dropdown").value]
 
-	image_data.inplaceMap = function(f) {
+	pixels = new MonochromePixelData(image_data, new_width, new_height)
+	pixels.inplaceMap = function (f) { 
 								for (var i = 0; i < this.data.length; i++)
-									this.data[i] = i%4!=3 ? f(this.data[i]) : this.data[i]
+									this.data[i] = f(this.data[i])
 							}
-	image_data.width = new_width
-	image_data.height = new_height
 
-	image_data.inplaceMap(srgbToLinear)
-	dither(image_data, kernel)
-	image_data.inplaceMap(linearToSrgb)
+	pixels.inplaceMap(srgbToLinear)
+	dither(pixels, kernel)
+	pixels.inplaceMap(linearToSrgb)
 
-	ctx.putImageData(image_data,0,0)
+	ctx.putImageData(pixels.asImageData(),0,0)
 	document.getElementById("outimg").src = ctx.canvas.toDataURL()
 }
 
@@ -160,34 +152,80 @@ function unloadImage() {
 	document.getElementById("reset_input_button").disabled=true;
 }
 
-function dither(image, kernel) {
+function srgbToLinear(s) {
+	s/=256
+	return (s <= .04045 ? s/12.92 : Math.pow(((s+0.055)/1.055), 2.4))*256
+}
+
+function linearToSrgb(l) {
+	l/=256
+	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 2.4) - 0.055)*256
+}
+
+function PixelData(image_data, width, height) {
+	this.image_data = image_data
+	this.data = image_data.data
+	this.width = width
+	this.height = height
+}
+PixelData.prototype.setPixel = function(x,y,c,v) {
+	this[y*this.width*4+x*4+c] = v
+}
+PixelData.prototype.getPixel = function(x,y,c) {
+	return this[y*this.width*4+x*4+c]
+}
+PixelData.prototype.asImageData = function() {
+	image_data.data = this.data
+	return image_data
+}
+function MonochromePixelData(image_data_array, width, height) {
+	this.image_data = image_data
+	new_array = []
+	for (var i = 0; i < image_data.data.length; i+=4) {
+		new_array.push((image_data.data[i]+image_data.data[i+1]+image_data.data[i+2])/3)
+	}
+	this.data = new_array
+	this.width = width
+	this.height = height
+}
+MonochromePixelData.prototype.setPixel = function(x,y,v) {
+	this.data[y*this.width+x] = v
+}
+MonochromePixelData.prototype.getPixel = function(x,y,c) {
+	return this.data[y*this.width+x]
+}
+MonochromePixelData.prototype.asImageData = function() {
+	for (var i = 0; i < this.data.length; i++) {
+		image_data.data[i*4+0] = this.data[i]
+		image_data.data[i*4+1] = this.data[i]
+		image_data.data[i*4+2] = this.data[i]
+		image_data.data[i*4+3] = 255
+	}
+	return image_data
+}
+MonochromePixelData.prototype.inplaceMap = function(f) {
+	for (var i = 0; i < this.data.length; i++)
+		this.data[i] = f(this.data[i])
+}
+
+function dither(pixels, kernel) {
 	var kernel_rows = Math.max(...kernel.map(el => el[1]))+1
 
 	var e = []
 	for (var i = 0; i < kernel_rows; i++)
-		e.push(new Array(image.width).fill(0.))
+		e.push(new Array(pixels.width).fill(0.))
 
-	function getPixel(x,y,c) { return image.data[y*image.width*4+x*4+c]}
-	function setPixel(x,y,c,v) { image.data[y*image.width*4+x*4+c] = v}
-	// TODO
-	function getPixelM(x,y) { return getPixel(x,y,0) }
-	function setPixelM(x,y,v) { setPixel(x,y,0,v);
-	setPixel(x,y,1,v);
-	setPixel(x,y,2,v);
-	setPixel(x,y,3,255); }
-
-
-	for (var row = 0; row < image.height; row++) {
-		e[e.length] = new Array(image.width).fill(0.)
-		for (var col = 0; col < image.width; col++) {
-			var color = getPixel(col, row, 0)
+	for (var row = 0; row < pixels.height; row++) {
+		e[e.length] = new Array(pixels.width).fill(0.)
+		for (var col = 0; col < pixels.width; col++) {
+			var color = pixels.getPixel(col, row, 0)
 
 			var err = 0
 			if (color+e[0][col] > 127) {
-				setPixelM(col, row, 255)
+				pixels.setPixel(col, row, 255)
 				err = color+e[0][col]-255
 			} else {
-				setPixelM(col, row, 0)
+				pixels.setPixel(col, row, 0)
 				err = color+e[0][col]
 			}
 
