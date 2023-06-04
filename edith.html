@@ -26,11 +26,16 @@
 				<label>
 					Method
 					<select name="method" id="method_dropdown">
+						<optgroup label="error diffusion">
 						<option>floyd-steinberg</option>
 						<option>atkinson</option>
 						<option>jarvis-judice-ninke</option>
 						<option>stucki</option>
 						<option>shiau-fan</option>
+						<optgroup label="ordered">
+						<option value="bayer1">2x2 bayer</option>
+						<option value="bayer2">4x4 bayer</option>
+						<option value="bayer3">8x8 bayer</option>
 					</select>
 				</label>
 				<label>
