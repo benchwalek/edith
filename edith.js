@@ -103,9 +103,9 @@ function process() {
 
 	var new_width, new_height
 	if (width > height)
-		[new_width, new_height] = [size, size*height/width]
+		[new_width, new_height] = [size, Math.floor(size*height/width)]
 	else
-		[new_width, new_height] = [size*width/height, size]
+		[new_width, new_height] = [Math.floor(size*width/height), size]
 
 	ctx.canvas.width = new_width
 	ctx.canvas.height = new_height
