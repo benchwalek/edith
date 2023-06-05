@@ -151,10 +151,25 @@ function process() {
 						}
 
 	pixels.inplaceMap(srgbToLinear)
-	if (method.includes("bayer"))
+
+	switch (method) {
+	case "random":
+		random_dither(pixels)
+		break;
+	case "bayer1":
+	case "bayer2":
+	case "bayer3":
 		bayer_dither(pixels, bayer_matrices[method])
-	else
+		break;
+	case "floyd-steinberg":
+	case "shiau-fan":
+	case "atkinson":
+	case "jarvis-judice-ninke":
+	case "stucki":
 		dither(pixels, dither_kernels[method])
+		break;
+	}
+
 	pixels.inplaceMap(linearToSrgb)
 
 	ctx.putImageData(pixels.asImageData(),0,0)
@@ -234,6 +249,19 @@ MonochromePixelData.prototype.asImageData = function() {
 MonochromePixelData.prototype.inplaceMap = function(f) {
 	for (var i = 0; i < this.data.length; i++)
 		this.data[i] = f(this.data[i])
+}
+
+function random_dither(pixels) {
+	for (var row = 0; row < pixels.height; row++) {
+		for (var col = 0; col < pixels.width; col++) {
+			var color = pixels.getPixel(col, row, 0)
+
+			if (color > Math.random()*256)
+				pixels.setPixel(col, row, 255)
+			else
+				pixels.setPixel(col, row, 0)
+		}
+	}
 }
 
 function dither(pixels, kernel) {
