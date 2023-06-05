@@ -97,8 +97,8 @@ window.onload = function () {
 	document.getElementById("options").addEventListener("change", () => process())
 	document.getElementById("reset_input_button").addEventListener("click", unloadImage)
 	document.getElementById("file_input").addEventListener("change", openHandler)
-	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => document.getElementById("exposure_slider").value = 0)
-	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => document.getElementById("contrast_slider").value = 0)
+	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("exposure_slider").value = 0; process()})
+	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
 }
 
 function dragOverHandler(ev) {
