@@ -39,7 +39,7 @@ body {
 	border-radius: 0px 0px 20px 0px;
 }
 #options {
-	font-size: 11px;
+	font-size: 14px;
 	border-radius: 0px 20px 0px 0px;
 }
 
@@ -121,4 +121,13 @@ img[src=""] {
 
 #file_input_label > label:hover {
 	text-decoration: underline;
+}
+
+#exposure_slider {
+	vertical-align: middle;
+}
+
+label {
+	user-select: none;
+	-webkit-user-select: none;
 }

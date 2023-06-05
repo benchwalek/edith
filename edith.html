@@ -24,6 +24,13 @@
 			</div>
 			<div class="box" id="options">
 				<label>
+					Exposure
+					<input id="exposure_slider" type="range" min=-128 max=128 value=0 list="exposure_slider_ticks">
+					<datalist id="exposure_slider_ticks">
+						<option value=0></option>
+					</datalist>
+				</label>
+				<label>
 					Method
 					<select name="method" id="method_dropdown">
 						<optgroup label="error diffusion">

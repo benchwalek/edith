@@ -3,10 +3,12 @@
 // multiple grey levels
 // color dithering
 // canvas drawing instead of embed (performance?)
-// more dither methods: riemersma, ordered, blue noise, ordered+error diff, error diff w/ random element
+// more dither methods: riemersma, blue noise, ordered+error diff, error diff w/ random element
 // add exposure compensation / contrast
 // style
 // fix #inimg dimension change when adding image
+// add preview image on slider drag
+// add histogram (canvas)
 
 // format: rx, ry, weight
 let dither_kernels = {
@@ -95,6 +97,7 @@ window.onload = function () {
 	document.getElementById("options").addEventListener("change", () => process())
 	document.getElementById("reset_input_button").addEventListener("click", unloadImage)
 	document.getElementById("file_input").addEventListener("change", openHandler)
+	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => document.getElementById("exposure_slider").value = 0)
 }
 
 function dragOverHandler(ev) {
@@ -151,6 +154,9 @@ function process() {
 						}
 
 	pixels.inplaceMap(srgbToLinear)
+
+	var exposure = document.getElementById("exposure_slider").value
+	pixels.inplaceMap(x => x+parseInt(exposure))
 
 	switch (method) {
 	case "random":
