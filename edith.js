@@ -120,6 +120,19 @@ function openHandler(ev) {
 	loadImage(this.files[0])
 }
 
+function getResizedImageData(img, ctx, long_edge) {
+	var new_width, new_height
+	if (img.width > img.height)
+		[new_width, new_height] = [long_edge, Math.floor(long_edge*img.height/img.width)]
+	else
+		[new_width, new_height] = [Math.floor(long_edge*img.width/img.height), long_edge]
+	ctx.canvas.width = new_width
+	ctx.canvas.height = new_height
+	ctx.drawImage(original_image, 0, 0, new_width, new_height)
+	return ctx.getImageData(0, 0, new_width, new_height)
+}
+
+
 function process() {
 	if (original_image == null)
 		return
@@ -128,31 +141,14 @@ function process() {
 
 	// resize
 	var size = parseInt(document.getElementById("size_input").value)
-	var [width, height] = [original_image.width, original_image.height]
-
-	if  (isNaN(size) || size > Math.max(width, height) || size <= 0)
-		size = Math.max(width, height)
+	if  (isNaN(size) || size > Math.max(original_image.width, original_image.height) || size <= 0)
+		size = Math.max(original_image.width, original_image.height)
 	document.getElementById("size_input").value = size
 
-	var new_width, new_height
-	if (width > height)
-		[new_width, new_height] = [size, Math.floor(size*height/width)]
-	else
-		[new_width, new_height] = [Math.floor(size*width/height), size]
-
-	ctx.canvas.width = new_width
-	ctx.canvas.height = new_height
-	ctx.drawImage(original_image, 0, 0, new_width, new_height)
-	image_data = ctx.getImageData(0, 0, new_width, new_height)
-
+	image_data = getResizedImageData(original_image, ctx, size)
 	var method = document.getElementById("method_dropdown").value
 
-
-	pixels = new MonochromePixelData(image_data, new_width, new_height)
-	pixels.inplaceMap = function (f) { 
-								for (var i = 0; i < this.data.length; i++)
-									this.data[i] = f(this.data[i])
-						}
+	pixels = new MonochromePixelData(image_data)
 
 	pixels.inplaceMap(srgbToLinear)
 
@@ -216,11 +212,11 @@ function linearToSrgb(l) {
 	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 2.4) - 0.055)*256
 }
 
-function PixelData(image_data, width, height) {
+function PixelData(image_data) {
 	this.image_data = image_data
 	this.data = image_data.data
-	this.width = width
-	this.height = height
+	this.width = image_data.width
+	this.height = image_data.height
 }
 PixelData.prototype.setPixel = function(x,y,c,v) {
 	this[y*this.width*4+x*4+c] = v
@@ -232,15 +228,15 @@ PixelData.prototype.asImageData = function() {
 	image_data.data = this.data
 	return image_data
 }
-function MonochromePixelData(image_data_array, width, height) {
+function MonochromePixelData(image_data) {
 	this.image_data = image_data
 	new_array = []
 	for (var i = 0; i < image_data.data.length; i+=4) {
 		new_array.push((image_data.data[i]+image_data.data[i+1]+image_data.data[i+2])/3)
 	}
 	this.data = new_array
-	this.width = width
-	this.height = height
+	this.width = image_data.width
+	this.height = image_data.height
 }
 MonochromePixelData.prototype.setPixel = function(x,y,v) {
 	this.data[y*this.width+x] = v
@@ -250,12 +246,12 @@ MonochromePixelData.prototype.getPixel = function(x,y,c) {
 }
 MonochromePixelData.prototype.asImageData = function() {
 	for (var i = 0; i < this.data.length; i++) {
-		image_data.data[i*4+0] = this.data[i]
-		image_data.data[i*4+1] = this.data[i]
-		image_data.data[i*4+2] = this.data[i]
-		image_data.data[i*4+3] = 255
+		this.image_data.data[i*4+0] = this.data[i]
+		this.image_data.data[i*4+1] = this.data[i]
+		this.image_data.data[i*4+2] = this.data[i]
+		this.image_data.data[i*4+3] = 255
 	}
-	return image_data
+	return this.image_data
 }
 MonochromePixelData.prototype.inplaceMap = function(f) {
 	for (var i = 0; i < this.data.length; i++)
