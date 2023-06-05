@@ -127,6 +127,10 @@ img[src=""] {
 	vertical-align: middle;
 }
 
+#contrast_slider {
+	vertical-align: middle;
+}
+
 label {
 	user-select: none;
 	-webkit-user-select: none;

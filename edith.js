@@ -98,6 +98,7 @@ window.onload = function () {
 	document.getElementById("reset_input_button").addEventListener("click", unloadImage)
 	document.getElementById("file_input").addEventListener("change", openHandler)
 	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => document.getElementById("exposure_slider").value = 0)
+	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => document.getElementById("contrast_slider").value = 0)
 }
 
 function dragOverHandler(ev) {
@@ -155,8 +156,12 @@ function process() {
 
 	pixels.inplaceMap(srgbToLinear)
 
+	var contrast = document.getElementById("contrast_slider").value
+	pixels.inplaceMap(x => (x-128)*Math.pow(2, parseFloat(contrast))+128)
+
 	var exposure = document.getElementById("exposure_slider").value
 	pixels.inplaceMap(x => x+parseInt(exposure))
+
 
 	switch (method) {
 	case "random":
