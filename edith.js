@@ -150,14 +150,13 @@ function process() {
 
 	pixels = new MonochromePixelData(image_data)
 
-	pixels.inplaceMap(srgbToLinear)
-
 	var contrast = document.getElementById("contrast_slider").value
 	pixels.inplaceMap(x => (x-128)*Math.pow(2, parseFloat(contrast))+128)
 
 	var exposure = document.getElementById("exposure_slider").value
 	pixels.inplaceMap(x => x+parseInt(exposure))
 
+	pixels.inplaceMap(srgbToLinear)
 
 	switch (method) {
 	case "random":
