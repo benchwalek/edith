@@ -1,13 +1,13 @@
 // TODO
-// make implementation more flexible, for color dithering support: mono arrays, rgb arrays, drop alpha
 // multiple grey levels
-// color dithering
-// canvas drawing instead of embed (performance?)
+// color dithering:
+//	add palette specification (+find_nearest_color)
+//  add k-means
+// canvas drawing instead of embed (performance?) !!!
 // more dither methods: riemersma, blue noise, ordered+error diff, error diff w/ random element
-// add exposure compensation / contrast
 // style
 // fix #inimg dimension change when adding image
-// add preview image on slider drag
+// add preview image on slider drag, use input event
 // add histogram (canvas)
 
 // format: rx, ry, weight
