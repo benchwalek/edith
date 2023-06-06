@@ -22,42 +22,43 @@
 				</div>
 				<button id="reset_input_button" disabled></button>
 			</div>
-			<div class="box" id="options">
-				<label>
-					Exposure
-					<input id="exposure_slider" type="range" min=-128 max=128 value=0 list="exposure_slider_ticks">
-					<datalist id="exposure_slider_ticks">
-						<option value=0></option>
-					</datalist>
-				</label>
-				<label>
-					Contrast
-					<input id="contrast_slider" type="range" step=0.1 min=-1 max=1 value=0 list="contrast_slider_ticks">
-					<datalist id="contrast_slider_ticks">
-						<option value=0></option>
-					</datalist>
-				</label>
-				<label>
-					Method
-					<select name="method" id="method_dropdown">
-						<optgroup label="error diffusion">
-						<option>floyd-steinberg</option>
-						<option>atkinson</option>
-						<option>jarvis-judice-ninke</option>
-						<option>stucki</option>
-						<option>shiau-fan</option>
-						<optgroup label="ordered">
-						<option>random</option>
-						<option value="bayer1">2x2 bayer</option>
-						<option value="bayer2">4x4 bayer</option>
-						<option value="bayer3">8x8 bayer</option>
-					</select>
-				</label>
-				<label>
-					Size
-					<input type="text" value="300" id="size_input">
-				</label>
-				<!-- <button id="reload_button">Dither me!</button> -->
+			<div id="options">
+				<div id=form>
+					<div class="form-row">
+						<label for="exposure_slider">Exposure</label>
+						<input id="exposure_slider" type="range" min=-128 max=128 value=0 step=16 list="exposure_slider_ticks">
+						<datalist id="exposure_slider_ticks"><option value=0></option></datalist>
+					</div>
+
+					<div class="form-row">
+						<label for="contrast_slider">Contrast</label>
+						<input id="contrast_slider" type="range" step=0.1 min=-1 max=1 value=0 list="contrast_slider_ticks">
+						<datalist id="contrast_slider_ticks"><option value=0></option></datalist>
+					</div>
+
+					<div class="form-row">
+						<label for="method_dropdown">Method</label>
+						<select name="method" id="method_dropdown">
+							<optgroup label="error diffusion" />
+							<option>floyd-steinberg</option>
+							<option>atkinson</option>
+							<option>jarvis-judice-ninke</option>
+							<option>stucki</option>
+							<option>shiau-fan</option>
+							<optgroup label="ordered" />
+							<option>random</option>
+							<option value="bayer1">2x2 bayer</option>
+							<option value="bayer2">4x4 bayer</option>
+							<option value="bayer3">8x8 bayer</option>
+						</select>
+					</div>
+
+
+					<div class="form-row">
+						<label for="size_input">Size</label>
+						<input type="text" value="300" id="size_input">
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class=box>

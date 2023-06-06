@@ -6,7 +6,6 @@
 // canvas drawing instead of embed (performance?) !!!
 // more dither methods: riemersma, blue noise, ordered+error diff, error diff w/ random element
 // style
-// fix #inimg dimension change when adding image
 // add preview image on slider drag, use input event
 // add histogram (canvas)
 
