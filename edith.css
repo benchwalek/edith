@@ -81,7 +81,7 @@ small {
 	font-size: 11pt;
 }
 
-#reset_input_button {
+.btn {
 	position: absolute;
 	right: 1em;
 	top: 1em;
@@ -98,6 +98,14 @@ small {
 	display: inline-flex;
 }
 
+.btn:hover {
+	opacity: 100%;
+}
+
+.btn[disabled] {
+	display: none;
+}
+
 #reset_input_button::after {
 	display: inline-block;
 	content: "\00d7";
@@ -105,12 +113,11 @@ small {
 	position: relative;
 }
 
-#reset_input_button:hover {
-	opacity: 100%;
-}
-
-#reset_input_button[disabled] {
-	display: none;
+#download_button::after {
+	display: inline-block;
+	content: "v";
+	top: -.5px;
+	position: relative;
 }
 
 img[src=""] {

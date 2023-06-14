@@ -95,6 +95,7 @@ window.onload = function () {
 	document.getElementById("drop-zone").addEventListener("drop", dropHandler)
 	document.getElementById("options").addEventListener("change", () => process())
 	document.getElementById("reset_input_button").addEventListener("click", unloadImage)
+	document.getElementById("download_button").addEventListener("click", downloadResult)
 	document.getElementById("file_input").addEventListener("change", openHandler)
 	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("exposure_slider").value = 0; process()})
 	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
@@ -188,6 +189,7 @@ function loadImage(file) {
 		document.getElementById("inimg").src = fr.result;
 		document.getElementById("drop_here_text").classList.add("hidden"); 
 		document.getElementById("reset_input_button").disabled=false;
+		document.getElementById("download_button").disabled=false;
 	}
 	fr.readAsDataURL(file);
 }
@@ -197,7 +199,18 @@ function unloadImage() {
 	document.getElementById("outimg").src = ""
 	document.getElementById("inimg").src = ""
 	document.getElementById("drop_here_text").classList.remove("hidden");
+	document.getElementById("download_button").disabled=true;
 	document.getElementById("reset_input_button").disabled=true;
+}
+
+function downloadResult() {
+    var a = document.createElement("a");
+    ctx.canvas.toBlob(blob => {
+    	a.href = URL.createObjectURL(blob)
+	    a.download = "output.png";
+	    a.click();
+	    URL.revokeObjectURL(a.href)
+    })
 }
 
 function srgbToLinear(s) {
