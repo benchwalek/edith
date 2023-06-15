@@ -87,7 +87,10 @@ small {
 	top: 1em;
 	font-size: 20px;
 	border-radius: 50%;
-	background: var(--bg-color);
+	width: 1.5em;
+	height: 1.5em;
+/*	background: var(--bg-color);*/
+/*	background: transparent;*/
 	opacity: 50%;
 	border: none;
 	color: var(--text-color);
@@ -96,6 +99,8 @@ small {
 	display: inline-block;
 	font-size: 16px;
 	display: inline-flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .btn:hover {
@@ -113,11 +118,8 @@ small {
 	position: relative;
 }
 
-#download_button::after {
-	display: inline-block;
-	content: "v";
-	top: -.5px;
-	position: relative;
+#download_button > img {
+	width: 1em;
 }
 
 img[src=""] {
