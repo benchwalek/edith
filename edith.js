@@ -108,12 +108,11 @@ function dragOverHandler(ev) {
 function dropHandler(ev) {
 	ev.preventDefault();
 
-	[...ev.dataTransfer.items].forEach((item, i) =>
-	{	
-		if (item.kind === "file") {
-			loadImage(item.getAsFile())
-		}
-	})
+	var item = ev.dataTransfer.items[0]
+	var filename = ev.dataTransfer.files[0].name
+	if (item.kind === "file") {
+		loadImage(filename, item.getAsFile())
+	}
 }
 
 function openHandler(ev) {
@@ -182,8 +181,9 @@ function process() {
 	document.getElementById("outimg").src = ctx.canvas.toDataURL()
 }
 
-function loadImage(file) {
+function loadImage(filename, file) {
 	var fr = new FileReader();
+	original_filename = filename
 	fr.onload = function () {
 		window.createImageBitmap(file).then(bitmap => {original_image = bitmap; process()})
 		document.getElementById("inimg").src = fr.result;
@@ -196,6 +196,7 @@ function loadImage(file) {
 
 function unloadImage() {
 	original_image=null;
+	original_filename=null;
 	document.getElementById("outimg").src = ""
 	document.getElementById("inimg").src = ""
 	document.getElementById("drop_here_text").classList.remove("hidden");
@@ -207,7 +208,7 @@ function downloadResult() {
     var a = document.createElement("a");
     ctx.canvas.toBlob(blob => {
     	a.href = URL.createObjectURL(blob)
-	    a.download = "output.png";
+	    a.download = "edith " + original_filename;
 	    a.click();
 	    URL.revokeObjectURL(a.href)
     })
