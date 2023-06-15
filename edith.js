@@ -221,7 +221,7 @@ function srgbToLinear(s) {
 
 function linearToSrgb(l) {
 	l/=256
-	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 2.4) - 0.055)*256
+	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 1/2.4) - 0.055)*256
 }
 
 function PixelData(image_data) {
