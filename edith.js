@@ -1,52 +1,30 @@
 // format: rx, ry, weight
-let dither_kernels = {
+var dither_kernels = {
 	"floyd-steinberg": 
-	[[ 1,0,7/16],
-	 [-1,1,3/16],
-	 [ 0,1,5/16],
-	 [ 1,1,1/16]],
+	[			 			 [ 1,0,7/16],
+	 [-1,1,3/16],[ 0,1,5/16],[ 1,1,1/16]],
 	"shiau-fan": 
-	[[ 1,0,8/16],
-	 [-3,1,1/16],
-	 [-2,1,1/16],
-	 [-1,1,2/16],
-	 [ 0,1,4/16]],
+	[												  [ 1,0,8/16],
+	 [-3,1,1/16],[-2,1,1/16],[-1,1,2/16],[ 0,1,4/16]],
 	"atkinson": 
-	[[ 1,0,1/8],
-	 [ 2,0,1/8],
-	 [-1,1,1/8],
-	 [ 0,1,1/8],
-	 [ 1,1,1/8],
-	 [ 0,2,1/8]],
+	[					   [ 1,0,1/8],[ 2,0,1/8],
+	 [-1,1,1/8],[ 0,1,1/8],[ 1,1,1/8],
+	 			[ 0,2,1/8]],
 	"jarvis-judice-ninke":
-	[[ 1,0,7/48],
-	 [ 2,0,5/48],
-	 [-2,1,3/48],
-	 [-1,1,5/48],
-	 [ 0,1,7/48],
-	 [ 1,1,5/48],
-	 [ 2,1,3/48],
-	 [-2,2,1/48],
-	 [-1,2,3/48],
-	 [ 0,2,5/48],
-	 [ 1,2,3/48],
-	 [ 2,2,1/48]],
+	[									 [ 1,0,7/48],[ 2,0,5/48],
+	 [-2,1,3/48],[-1,1,5/48],[ 0,1,7/48],[ 1,1,5/48],[ 2,1,3/48],
+	 [-2,2,1/48],[-1,2,3/48],[ 0,2,5/48],[ 1,2,3/48],[ 2,2,1/48]],
 	"stucki":
-	[[ 1,0,8/42],
-	 [ 2,0,4/42],
-	 [-2,1,2/42],
-	 [-1,1,4/42],
-	 [ 0,1,8/42],
-	 [ 1,1,4/42],
-	 [ 2,1,2/42],
-	 [-2,2,1/42],
-	 [-1,2,2/42],
-	 [ 0,2,4/42],
-	 [ 1,2,2/42],
-	 [ 2,2,1/42]],
+	[									 [ 1,0,8/42],[ 2,0,4/42],
+	 [-2,1,2/42],[-1,1,4/42],[ 0,1,8/42],[ 1,1,4/42],[ 2,1,2/42],
+	 [-2,2,1/42],[-1,2,2/42],[ 0,2,4/42],[ 1,2,2/42],[ 2,2,1/42]],
 }
 
-let palettes_packed = {
+var bayer_matrices = { "bayer1": new bayerTexture( 4,  Uint8Array.of(0,128,32,160,192,64,224,96,48,176,16,144,240,112,208,80)),
+					   "bayer2": new bayerTexture( 8,  Uint8Array.of(0,128,32,160,8,136,40,168,192,64,224,96,200,72,232,104,48,176,16,144,56,184,24,152,240,112,208,80,248,120,216,88,12,140,44,172,4,132,36,164,204,76,236,108,196,68,228,100,60,188,28,156,52,180,20,148,252,124,220,92,244,116,212,84)),
+					   "bayer3": new bayerTexture( 16, Uint8Array.of(0,128,32,160,8,136,40,168,2,130,34,162,10,138,42,170,192,64,224,96,200,72,232,104,194,66,226,98,202,74,234,106,48,176,16,144,56,184,24,152,50,178,18,146,58,186,26,154,240,112,208,80,248,120,216,88,242,114,210,82,250,122,218,90,12,140,44,172,4,132,36,164,14,142,46,174,6,134,38,166,204,76,236,108,196,68,228,100,206,78,238,110,198,70,230,102,60,188,28,156,52,180,20,148,62,190,30,158,54,182,22,150,252,124,220,92,244,116,212,84,254,126,222,94,246,118,214,86,3,131,35,163,11,139,43,171,1,129,33,161,9,137,41,169,195,67,227,99,203,75,235,107,193,65,225,97,201,73,233,105,51,179,19,147,59,187,27,155,49,177,17,145,57,185,25,153,243,115,211,83,251,123,219,91,241,113,209,81,249,121,217,89,15,143,47,175,7,135,39,167,13,141,45,173,5,133,37,165,207,79,239,111,199,71,231,103,205,77,237,109,197,69,229,101,63,191,31,159,55,183,23,151,61,189,29,157,53,181,21,149,255,127,223,95,247,119,215,87,253,125,221,93,245,117,213,85))}
+
+var palettes_packed = {
 	"bw": [0x000000, 0xffffff],
 	"apple2": [0x000000, 0x515c16, 0x843d52, 0xea7d27, 0x514888, 0xe85def, 0xf5b7c9, 0x006752, 0x00c82c, 0x919191, 0xc9d199, 0x00a6f0, 0x98dbc9, 0xc8c1f7, 0xffffff],
 	"afr-32": [0xecebe7, 0xcbc6c1, 0xb28b78, 0x847066, 0x695b59, 0x4f4240, 0x352f2e, 0x723012, 0x845425, 0xa76343, 0xdc6a36, 0xf682bf, 0xd74060, 0xc5452b, 0xb02222, 0x8d1931, 0x6a1325, 0x3e1909, 0x406a3b, 0x76771d, 0x939446, 0xd3bd46, 0x99e0a8, 0x399a4d, 0x204f1a, 0x0f2c0c, 0x1a0a01, 0x14266a, 0x194f80, 0x2067a7, 0x49a3b4, 0x1de9de],
@@ -55,11 +33,16 @@ let palettes_packed = {
 	"steam-lords": [0x213b25, 0x3a604a, 0x4f7754, 0xa19f7c, 0x77744f, 0x775c4f, 0x603b3a, 0x3b2137, 0x170e19, 0x2f213b, 0x433a60, 0x4f5277, 0x65738c, 0x7c94a1, 0xa0b9ba, 0xc0d1cc]
 }
 
-// default palette
-let palette = packedRGBtoArray([0x000000, 0xFFFFFF]).map(v=>v.map(srgbToLinear))
-let spread = calculateSpread(palette)
+var default_palette = packedRGBtoArray(palettes_packed["bw"])
+var palette
+var spread
 
 var dist3 = euclidean_dist3
+
+var original_image = null
+var original_filename = ""
+
+var output_ctx
 
 function packedRGBtoArray(packed)
 {
@@ -238,11 +221,6 @@ function kMeansPalette(k, colors, iterations)
 	return centers
 }
 
-let bayer_matrices = { "bayer1": new bayerTexture( 4,  Uint8Array.of(0,128,32,160,192,64,224,96,48,176,16,144,240,112,208,80)),
-					   "bayer2": new bayerTexture( 8,  Uint8Array.of(0,128,32,160,8,136,40,168,192,64,224,96,200,72,232,104,48,176,16,144,56,184,24,152,240,112,208,80,248,120,216,88,12,140,44,172,4,132,36,164,204,76,236,108,196,68,228,100,60,188,28,156,52,180,20,148,252,124,220,92,244,116,212,84)),
-					   "bayer3": new bayerTexture( 16, Uint8Array.of(0,128,32,160,8,136,40,168,2,130,34,162,10,138,42,170,192,64,224,96,200,72,232,104,194,66,226,98,202,74,234,106,48,176,16,144,56,184,24,152,50,178,18,146,58,186,26,154,240,112,208,80,248,120,216,88,242,114,210,82,250,122,218,90,12,140,44,172,4,132,36,164,14,142,46,174,6,134,38,166,204,76,236,108,196,68,228,100,206,78,238,110,198,70,230,102,60,188,28,156,52,180,20,148,62,190,30,158,54,182,22,150,252,124,220,92,244,116,212,84,254,126,222,94,246,118,214,86,3,131,35,163,11,139,43,171,1,129,33,161,9,137,41,169,195,67,227,99,203,75,235,107,193,65,225,97,201,73,233,105,51,179,19,147,59,187,27,155,49,177,17,145,57,185,25,153,243,115,211,83,251,123,219,91,241,113,209,81,249,121,217,89,15,143,47,175,7,135,39,167,13,141,45,173,5,133,37,165,207,79,239,111,199,71,231,103,205,77,237,109,197,69,229,101,63,191,31,159,55,183,23,151,61,189,29,157,53,181,21,149,255,127,223,95,247,119,215,87,253,125,221,93,245,117,213,85))}
-
-
 
 function argmin(arr) {
     if (arr.length === 0) {
@@ -299,8 +277,6 @@ bayerTexture.prototype.at = function(x, y) {
 	return this.array[y*this.size+x]
 }
 
-var original_image = null
-var original_filename = ""
 
 function bayer_dither(pixels, threshold_map) {
 	for (var row = 0; row < pixels.height; row++) {
@@ -324,6 +300,7 @@ function no_dither(pixels) {
 
 
 window.onload = function () {
+	setPalette(default_palette)
 	document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
 	document.getElementById("drop-zone").addEventListener("drop", dropHandler)
 	document.getElementById("options").addEventListener("change", () => process())
@@ -398,7 +375,7 @@ function process() {
 	if (original_image == null)
 		return
 
-	var ctx = document.createElement('canvas').getContext('2d')
+	output_ctx = document.createElement('canvas').getContext('2d')
 
 	// resize
 	var size = parseInt(document.getElementById("size_input").value)
@@ -406,7 +383,7 @@ function process() {
 		size = Math.max(original_image.width, original_image.height)
 	document.getElementById("size_input").value = size
 
-	var image_data = getResizedImageData(original_image, ctx, size)
+	var image_data = getResizedImageData(original_image, output_ctx, size)
 	var method = document.getElementById("method_dropdown").value
 
 	var pixels = new PixelData(image_data)
@@ -433,7 +410,7 @@ function process() {
 	case "atkinson":
 	case "jarvis-judice-ninke":
 	case "stucki":
-		dither(pixels, dither_kernels[method])
+		diffusion_dither(pixels, dither_kernels[method])
 		break;
 	case "threshold":
 		no_dither(pixels)
@@ -441,8 +418,8 @@ function process() {
 
 	pixels.inplaceMap(linearToSrgb)
 
-	ctx.putImageData(pixels.asImageData(),0,0)
-	document.getElementById("outimg").src = ctx.canvas.toDataURL()
+	output_ctx.putImageData(pixels.asImageData(),0,0)
+	document.getElementById("outimg").src = output_ctx.canvas.toDataURL()
 }
 
 function loadImage(filename, file) {
@@ -559,7 +536,7 @@ function random_dither(pixels) {
 	}
 }
 
-function dither(pixels, kernel) {
+function diffusion_dither(pixels, kernel) {
 	var kernel_rows = Math.max(...kernel.map(el => el[1]))+1
 
 	var e = []
@@ -625,12 +602,4 @@ function oklabToLinear(c) {
 		-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
 		-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
 		];
-}
-
-function ok_dist3(a, b)
-{
-	[a,b] = [a,b].map(linearToOklab)
-
-	dist = euclidean_dist3(a,b)
-	return dist
 }
