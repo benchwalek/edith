@@ -447,7 +447,7 @@ function unloadImage() {
 
 function downloadResult() {
     var a = document.createElement("a");
-    ctx.canvas.toBlob(blob => {
+    output_ctx.canvas.toBlob(blob => {
     	a.href = URL.createObjectURL(blob)
 	    a.download = "edith " + original_filename;
 	    a.click();
