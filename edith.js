@@ -44,6 +44,94 @@ var original_filename = ""
 
 var output_ctx
 
+window.onload = function () {
+	setPalette(default_palette)
+	document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
+	document.getElementById("drop-zone").addEventListener("drop", dropHandler)
+	document.getElementById("options").addEventListener("change", () => process())
+	document.getElementById("reset_input_button").addEventListener("click", unloadImage)
+	document.getElementById("download_button").addEventListener("click", downloadResult)
+	document.getElementById("file_input").addEventListener("change", openHandler)
+	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("exposure_slider").value = 0; process()})
+	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
+	document.getElementById("k_means_button").addEventListener("click", runKMeans)
+	document.getElementById("load_palette_button").addEventListener("click", loadPalette)
+
+	visualizePalette()
+}
+
+function process() {
+	if (original_image == null)
+		return
+
+	output_ctx = document.createElement('canvas').getContext('2d')
+
+	// resize
+	var size = parseInt(document.getElementById("size_input").value)
+	if  (isNaN(size) || size > Math.max(original_image.width, original_image.height) || size <= 0)
+		size = Math.max(original_image.width, original_image.height)
+	document.getElementById("size_input").value = size
+
+	var image_data = getResizedImageData(original_image, output_ctx, size)
+	var method = document.getElementById("method_dropdown").value
+
+	var pixels = new PixelData(image_data)
+
+	var contrast = document.getElementById("contrast_slider").value
+	pixels.inplaceMap(x => (x-128)*Math.pow(2, parseFloat(contrast))+128)
+
+	var exposure = document.getElementById("exposure_slider").value
+	pixels.inplaceMap(x => x+parseInt(exposure))
+
+	pixels.inplaceMap(srgbToLinear)
+
+	switch (method) {
+	case "random":
+		random_dither(pixels)
+		break;
+	case "bayer1":
+	case "bayer2":
+	case "bayer3":
+		bayer_dither(pixels, bayer_matrices[method])
+		break;
+	case "floyd-steinberg":
+	case "shiau-fan":
+	case "atkinson":
+	case "jarvis-judice-ninke":
+	case "stucki":
+		diffusion_dither(pixels, dither_kernels[method])
+		break;
+	case "threshold":
+		no_dither(pixels)
+	}
+
+	pixels.inplaceMap(linearToSrgb)
+
+	output_ctx.putImageData(pixels.asImageData(),0,0)
+	document.getElementById("outimg").src = output_ctx.canvas.toDataURL()
+}
+
+function srgbToLinear(s) {
+	s/=256
+	return (s <= .04045 ? s/12.92 : Math.pow(((s+0.055)/1.055), 2.4))*256
+}
+
+function linearToSrgb(l) {
+	l/=256
+	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 1/2.4) - 0.055)*256
+}
+
+var rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
+	const hex = Math.floor(x).toString(16)
+	return hex.length === 1 ? '0' + hex : hex
+}).join('')
+
+const hexToRgb = hex =>
+  hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
+             ,(m, r, g, b) => '#' + r + r + g + g + b + b)
+    .substring(1).match(/.{2}/g)
+    .map(x => parseInt(x, 16))
+
 function packedRGBtoArray(packed)
 {
 	var array = []
@@ -81,6 +169,38 @@ function MortonToHilbert3D( morton, bits )
 	hilbert ^= ( ( hilbert >> 1 ) & 0x92492492 );
 	hilbert ^= ( ( hilbert & 0x92492492 ) >> 1 );
 	return( hilbert );
+}
+
+function linearToOklab(c) {
+	const l = 0.4122214708 * c[0] + 0.5363325363 * c[1] + 0.0514459929 * c[2];
+	const m = 0.2119034982 * c[0] + 0.6806995451 * c[1] + 0.1073969566 * c[2];
+	const s = 0.0883024619 * c[0] + 0.2817188376 * c[1] + 0.6299787005 * c[2];
+
+	const l_ = Math.cbrt(l);
+	const m_ = Math.cbrt(m);
+	const s_ = Math.cbrt(s);
+
+	return [
+		0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+		1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+		0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+		];
+}
+
+function oklabToLinear(c) {
+	const l_ = c[0] + 0.3963377774 * c[1] + 0.2158037573 * c[2];
+	const m_ = c[0] - 0.1055613458 * c[1] - 0.0638541728 * c[2];
+	const s_ = c[0] - 0.0894841775 * c[1] - 1.2914855480 * c[2];
+
+	const l = l_ * l_ * l_;
+	const m = m_ * m_ * m_;
+	const s = s_ * s_ * s_;
+
+	return [
+		4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+		-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+		-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
+		];
 }
 
 function getBit(x, n)
@@ -221,7 +341,6 @@ function kMeansPalette(k, colors, iterations)
 	return centers
 }
 
-
 function argmin(arr) {
     if (arr.length === 0) {
         return -1;
@@ -277,55 +396,6 @@ bayerTexture.prototype.at = function(x, y) {
 	return this.array[y*this.size+x]
 }
 
-
-function bayer_dither(pixels, threshold_map) {
-	for (var row = 0; row < pixels.height; row++) {
-		for (var col = 0; col < pixels.width; col++) {
-			var color = pixels.getPixel(col, row, 0).map((v) => v-spread*(threshold_map.at(col,row)/256-.5))
-			var nearest = find_nearest_color(color, palette)
-			pixels.setPixel(col, row, nearest)
-		}
-	}
-}
-
-function no_dither(pixels) {
-	for (var row = 0; row < pixels.height; row++) {
-		for (var col = 0; col < pixels.width; col++) {
-			var color = pixels.getPixel(col, row, 0)
-			var nearest = find_nearest_color(color, palette)
-			pixels.setPixel(col, row, nearest)
-		}
-	}
-}
-
-
-window.onload = function () {
-	setPalette(default_palette)
-	document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
-	document.getElementById("drop-zone").addEventListener("drop", dropHandler)
-	document.getElementById("options").addEventListener("change", () => process())
-	document.getElementById("reset_input_button").addEventListener("click", unloadImage)
-	document.getElementById("download_button").addEventListener("click", downloadResult)
-	document.getElementById("file_input").addEventListener("change", openHandler)
-	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("exposure_slider").value = 0; process()})
-	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
-	document.getElementById("k_means_button").addEventListener("click", runKMeans)
-	document.getElementById("load_palette_button").addEventListener("click", loadPalette)
-
-	visualizePalette()
-}
-
-
-var rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
-	const hex = Math.floor(x).toString(16)
-	return hex.length === 1 ? '0' + hex : hex
-}).join('')
-
-const hexToRgb = hex =>
-  hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
-             ,(m, r, g, b) => '#' + r + r + g + g + b + b)
-    .substring(1).match(/.{2}/g)
-    .map(x => parseInt(x, 16))
 function visualizePalette()
 {
 	var pickers = []
@@ -370,58 +440,6 @@ function getResizedImageData(img, ctx, long_edge) {
 	return ctx.getImageData(0, 0, new_width, new_height)
 }
 
-
-function process() {
-	if (original_image == null)
-		return
-
-	output_ctx = document.createElement('canvas').getContext('2d')
-
-	// resize
-	var size = parseInt(document.getElementById("size_input").value)
-	if  (isNaN(size) || size > Math.max(original_image.width, original_image.height) || size <= 0)
-		size = Math.max(original_image.width, original_image.height)
-	document.getElementById("size_input").value = size
-
-	var image_data = getResizedImageData(original_image, output_ctx, size)
-	var method = document.getElementById("method_dropdown").value
-
-	var pixels = new PixelData(image_data)
-
-	var contrast = document.getElementById("contrast_slider").value
-	pixels.inplaceMap(x => (x-128)*Math.pow(2, parseFloat(contrast))+128)
-
-	var exposure = document.getElementById("exposure_slider").value
-	pixels.inplaceMap(x => x+parseInt(exposure))
-
-	pixels.inplaceMap(srgbToLinear)
-
-	switch (method) {
-	case "random":
-		random_dither(pixels)
-		break;
-	case "bayer1":
-	case "bayer2":
-	case "bayer3":
-		bayer_dither(pixels, bayer_matrices[method])
-		break;
-	case "floyd-steinberg":
-	case "shiau-fan":
-	case "atkinson":
-	case "jarvis-judice-ninke":
-	case "stucki":
-		diffusion_dither(pixels, dither_kernels[method])
-		break;
-	case "threshold":
-		no_dither(pixels)
-	}
-
-	pixels.inplaceMap(linearToSrgb)
-
-	output_ctx.putImageData(pixels.asImageData(),0,0)
-	document.getElementById("outimg").src = output_ctx.canvas.toDataURL()
-}
-
 function loadImage(filename, file) {
 	var fr = new FileReader();
 	original_filename = filename
@@ -455,14 +473,72 @@ function downloadResult() {
     })
 }
 
-function srgbToLinear(s) {
-	s/=256
-	return (s <= .04045 ? s/12.92 : Math.pow(((s+0.055)/1.055), 2.4))*256
+
+function bayer_dither(pixels, threshold_map) {
+	for (var row = 0; row < pixels.height; row++) {
+		for (var col = 0; col < pixels.width; col++) {
+			var color = pixels.getPixel(col, row, 0).map((v) => v-spread*(threshold_map.at(col,row)/256-.5))
+			var nearest = find_nearest_color(color, palette)
+			pixels.setPixel(col, row, nearest)
+		}
+	}
 }
 
-function linearToSrgb(l) {
-	l/=256
-	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 1/2.4) - 0.055)*256
+function no_dither(pixels) {
+	for (var row = 0; row < pixels.height; row++) {
+		for (var col = 0; col < pixels.width; col++) {
+			var color = pixels.getPixel(col, row, 0)
+			var nearest = find_nearest_color(color, palette)
+			pixels.setPixel(col, row, nearest)
+		}
+	}
+}
+
+function random_dither(pixels) {
+	for (var row = 0; row < pixels.height; row++) {
+		for (var col = 0; col < pixels.width; col++) {
+			var color = pixels.getPixel(col, row)
+			var nearest = find_nearest_color(color.map(v => v - (Math.random()-.5)*spread), palette)
+
+			pixels.setPixel(col, row, nearest)
+		}
+	}
+}
+
+function diffusion_dither(pixels, kernel) {
+	var kernel_rows = Math.max(...kernel.map(el => el[1]))+1
+
+	var e = []
+	for (var i = 0; i < kernel_rows; i++) {
+		var tmp = new Array(pixels.width)
+		for (var j = 0; j < tmp.length; j++)
+			tmp[j] = [0,0,0]
+		e.push(tmp)
+	}
+
+	for (var row = 0; row < pixels.height; row++) {
+		e.push([])
+		for (var i = 0; i < pixels.width; i++)
+			e[e.length-1].push([0,0,0])
+
+		for (var col = 0; col < pixels.width; col++) {
+			var color = pixels.getPixel(col, row)
+
+			var adj_color = color.map((v,i) => v+e[0][col][i])
+
+			var nearest = find_nearest_color(adj_color, palette)
+			pixels.setPixel(col, row, nearest)
+			var err = Array.from(adj_color).map((v,i) => v-nearest[i])
+
+
+			for (var k of kernel) {
+				if (col+k[0] < 0 || col+k[0] >= pixels.width)
+					continue
+				e[k[1]][col+k[0]] = e[k[1]][col+k[0]].map((v,i) => v+err.map((w) => w*k[2])[i])
+			}
+		}
+		e.shift()
+	}
 }
 
 function PixelData(image_data) {
@@ -523,83 +599,4 @@ MonochromePixelData.prototype.asImageData = function() {
 MonochromePixelData.prototype.inplaceMap = function(f) {
 	for (var i = 0; i < this.data.length; i++)
 		this.data[i] = f(this.data[i])
-}
-
-function random_dither(pixels) {
-	for (var row = 0; row < pixels.height; row++) {
-		for (var col = 0; col < pixels.width; col++) {
-			var color = pixels.getPixel(col, row)
-			var nearest = find_nearest_color(color.map(v => v - (Math.random()-.5)*spread), palette)
-
-			pixels.setPixel(col, row, nearest)
-		}
-	}
-}
-
-function diffusion_dither(pixels, kernel) {
-	var kernel_rows = Math.max(...kernel.map(el => el[1]))+1
-
-	var e = []
-	for (var i = 0; i < kernel_rows; i++) {
-		var tmp = new Array(pixels.width)
-		for (var j = 0; j < tmp.length; j++)
-			tmp[j] = [0,0,0]
-		e.push(tmp)
-	}
-
-	for (var row = 0; row < pixels.height; row++) {
-		e.push([])
-		for (var i = 0; i < pixels.width; i++)
-			e[e.length-1].push([0,0,0])
-
-		for (var col = 0; col < pixels.width; col++) {
-			var color = pixels.getPixel(col, row)
-
-			var adj_color = color.map((v,i) => v+e[0][col][i])
-
-			var nearest = find_nearest_color(adj_color, palette)
-			pixels.setPixel(col, row, nearest)
-			var err = Array.from(adj_color).map((v,i) => v-nearest[i])
-
-
-			for (var k of kernel) {
-				if (col+k[0] < 0 || col+k[0] >= pixels.width)
-					continue
-				e[k[1]][col+k[0]] = e[k[1]][col+k[0]].map((v,i) => v+err.map((w) => w*k[2])[i])
-			}
-		}
-		e.shift()
-	}
-}
-
-function linearToOklab(c) {
-	const l = 0.4122214708 * c[0] + 0.5363325363 * c[1] + 0.0514459929 * c[2];
-	const m = 0.2119034982 * c[0] + 0.6806995451 * c[1] + 0.1073969566 * c[2];
-	const s = 0.0883024619 * c[0] + 0.2817188376 * c[1] + 0.6299787005 * c[2];
-
-	const l_ = Math.cbrt(l);
-	const m_ = Math.cbrt(m);
-	const s_ = Math.cbrt(s);
-
-	return [
-		0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
-		1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
-		0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
-		];
-}
-
-function oklabToLinear(c) {
-	const l_ = c[0] + 0.3963377774 * c[1] + 0.2158037573 * c[2];
-	const m_ = c[0] - 0.1055613458 * c[1] - 0.0638541728 * c[2];
-	const s_ = c[0] - 0.0894841775 * c[1] - 1.2914855480 * c[2];
-
-	const l = l_ * l_ * l_;
-	const m = m_ * m_ * m_;
-	const s = s_ * s_ * s_;
-
-	return [
-		4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-		-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-		-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
-		];
 }
