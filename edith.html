@@ -9,62 +9,90 @@
 	<script src="edith.js"></script>
 </head>
 <body>
-	<div id="hsplit">
-		<div id="vsplit">
-			<div class="box" id="drop-zone">
-				<img id="inimg">
-				<div id="drop_here_text">
-					Drop image here <br>
-					<small>or <span id="file_input_label">
-						<label for="file_input">select file.</label>
-						<input id="file_input" type=file></input>
-					</span></small>
-				</div>
-				<button id="reset_input_button" class="btn" disabled></button>
+	<div class="wrapper">
+		<div class="input-pane" id="drop-zone">
+			<img id="inimg">
+			<div id="drop_here_text">
+				Drop image here <br>
+				<small>or <span id="file_input_label">
+					<label for="file_input">select file.</label>
+					<input id="file_input" type=file></input>
+				</span></small>
 			</div>
-			<div id="options">
-				<div id=form>
-					<div class="form-row">
-						<label for="exposure_slider">Exposure</label>
-						<input id="exposure_slider" type="range" min=-128 max=128 value=0 step=16 list="exposure_slider_ticks">
-						<datalist id="exposure_slider_ticks"><option value=0></option></datalist>
-					</div>
+			<button id="reset_input_button" class="btn" disabled></button>
+		</div>
+		<div class="option-pane" id="options">
+			<div id=form>
+				<div class="form-row">
+					<select name="color palette" id="palette_dropdown">
+						<option>bw</option>
+						<option>apple2</option>
+						<option>afr-32</option>
+						<option>cc-29</option>
+						<option>nopal-12</option>
+						<option>steam-lords</option>
+					</select>
+					<button id="load_palette_button">Load</button>
+				</div>
+				<div class="form-row">
+					<input type="text" id="k_means_k">
+					<button id="k_means_button">Gen</button>
+				</div>
+				<div class="form-row">
+					<label for="exposure_slider">Exposure</label>
+					<input id="exposure_slider" type="range" min=-128 max=128 value=0 step=16 list="exposure_slider_ticks">
+					<datalist id="exposure_slider_ticks"><option value=0></option></datalist>
+				</div>
 
-					<div class="form-row">
-						<label for="contrast_slider">Contrast</label>
-						<input id="contrast_slider" type="range" step=0.1 min=-1 max=1 value=0 list="contrast_slider_ticks">
-						<datalist id="contrast_slider_ticks"><option value=0></option></datalist>
-					</div>
+				<div class="form-row">
+					<label for="contrast_slider">Contrast</label>
+					<input id="contrast_slider" type="range" step=0.1 min=-1 max=1 value=0 list="contrast_slider_ticks">
+					<datalist id="contrast_slider_ticks"><option value=0></option></datalist>
+				</div>
 
-					<div class="form-row">
-						<label for="method_dropdown">Method</label>
-						<select name="method" id="method_dropdown">
-							<optgroup label="error diffusion" />
-							<option>floyd-steinberg</option>
-							<option>atkinson</option>
-							<option>jarvis-judice-ninke</option>
-							<option>stucki</option>
-							<option>shiau-fan</option>
-							<optgroup label="ordered" />
-							<option>random</option>
-							<option value="bayer1">2x2 bayer</option>
-							<option value="bayer2">4x4 bayer</option>
-							<option value="bayer3">8x8 bayer</option>
-						</select>
-					</div>
+				<div class="form-row">
+					<label for="method_dropdown">Method</label>
+					<select name="method" id="method_dropdown">
+						<option>threshold</option>
+						<optgroup label="error diffusion" />
+						<option>floyd-steinberg</option>
+						<option>atkinson</option>
+						<option>jarvis-judice-ninke</option>
+						<option>stucki</option>
+						<option>shiau-fan</option>
+						<optgroup label="ordered" />
+						<option>random</option>
+						<option value="bayer1">2x2 bayer</option>
+						<option value="bayer2">4x4 bayer</option>
+						<option value="bayer3">8x8 bayer</option>
+					</select>
+				</div>
 
 
-					<div class="form-row">
-						<label for="size_input">Size</label>
-						<input type="text" value="300" id="size_input">
-					</div>
+				<div class="form-row">
+					<label for="size_input">Size</label>
+					<input type="text" value="300" id="size_input">
 				</div>
 			</div>
 		</div>
-		<div class=box>
+		<div class="palette-pane" id="palette">
+		</div>
+		<div class="output-pane">
 			<img id="outimg" src="">
 			<button id="download_button" class="btn" disabled><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAg0lEQVR4nO2UOwqAMBBE3zWsLCxsLLSw8vYGPYSghYVgIR4hErAQ/58EQfNgIBCYIRN24U9kgBwlTATImWzAAmkr+l5F1Yrplso7ATHQnTDvgeTuKyKg3TFXdyEP8YF6xbwBAjThAsXEXP2Ph2YcIB+3qjpb9CMuDJY8kDAdkBoo4CUG+aZ0PJTVTQsAAAAASUVORK5CYII="></button>
 		</div>
 	</div>
+<!-- 	<div id="hsplit">
+		<div id="vsplit">
+			<div class="box" id="drop-zone">
+			</div>
+			<div id="options">
+			</div>
+		</div>
+		<div class=box id="palette">
+		</div>
+		<div class=box>
+		</div>
+	</div>
 </body>
-</html>
+--></html>
