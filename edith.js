@@ -65,8 +65,8 @@ window.onload = function () {
 function process() {
 	if (original_image == null)
 		return
-
-	output_ctx = document.createElement('canvas').getContext('2d')
+	if (output_ctx == null)
+		output_ctx = document.createElement('canvas').getContext('2d')
 
 	// resize
 	var size = parseInt(document.getElementById("size_input").value)
@@ -362,8 +362,18 @@ function kMeansPalette(k, colors, iterations)
 	// for each color c, calculate distance between nearest center
 	while (centers.length < k) {
 		var distances = []
-		for (var c of colors)
-			distances.push(centers.map(center => dist3(center, c)).reduce((a,v) => Math.min(a,v)))
+		for (var i = 0; i < colors.length; i++) {
+			var minDistanceToCenter = Infinity
+			for (var j = 0; j < centers.length; j++) {
+				var distance = dist3(colors[i], centers[j]) 
+				if (distance < minDistanceToCenter)
+					minDistanceToCenter = distance
+			}
+			distances[i] = minDistanceToCenter
+		}
+
+		// for (var c of colors)
+		// 	distances.push(centers.map(center => dist3(center, c)).reduce((a,v) => Math.min(a,v)))
 		centers.push(colors[weightedRandom(distances)])
 	}
 
@@ -594,7 +604,9 @@ function diffusion_dither(pixels, kernel) {
 			for (var k of kernel) {
 				if (col+k[0] < 0 || col+k[0] >= pixels.width)
 					continue
-				e[k[1]][col+k[0]] = e[k[1]][col+k[0]].map((v,i) => v+err.map((w) => w*k[2])[i])
+				for (var j = 0; j < e[k[1]][col+k[0]].length; j++)
+					e[k[1]][col+k[0]][j] += err[j]*k[2]
+				// e[k[1]][col+k[0]] = e[k[1]][col+k[0]].map((v,i) => v+err.map((w) => w*k[2])[i])
 			}
 		}
 		e.shift()
