@@ -33,11 +33,13 @@ var palettes_packed = {
 	"steam-lords": [0x213b25, 0x3a604a, 0x4f7754, 0xa19f7c, 0x77744f, 0x775c4f, 0x603b3a, 0x3b2137, 0x170e19, 0x2f213b, 0x433a60, 0x4f5277, 0x65738c, 0x7c94a1, 0xa0b9ba, 0xc0d1cc]
 }
 
+
 var default_palette = packedRGBtoArray(palettes_packed["bw"])
 var palette
 var spread
 
 var dist3 = euclidean_dist3
+var generatePalette = medianCutPalette
 
 var original_image = null
 var original_filename = ""
@@ -54,7 +56,7 @@ window.onload = function () {
 	document.getElementById("file_input").addEventListener("change", openHandler)
 	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("exposure_slider").value = 0; process()})
 	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
-	document.getElementById("k_means_button").addEventListener("click", runKMeans)
+	document.getElementById("k_means_button").addEventListener("click", runQuantization)
 	document.getElementById("load_palette_button").addEventListener("click", loadPalette)
 
 	visualizePalette()
@@ -172,6 +174,7 @@ function MortonToHilbert3D( morton, bits )
 }
 
 function linearToOklab(c) {
+	c=c.map(v=>v/256)
 	const l = 0.4122214708 * c[0] + 0.5363325363 * c[1] + 0.0514459929 * c[2];
 	const m = 0.2119034982 * c[0] + 0.6806995451 * c[1] + 0.1073969566 * c[2];
 	const s = 0.0883024619 * c[0] + 0.2817188376 * c[1] + 0.6299787005 * c[2];
@@ -200,7 +203,7 @@ function oklabToLinear(c) {
 		4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
 		-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
 		-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
-		];
+		].map(v=>v*256);
 }
 
 function getBit(x, n)
@@ -259,18 +262,75 @@ function weightedRandom(probabilities)
 	return cumulative.findIndex(v => r >= v)
 }
 
-function runKMeans() {
+function runQuantization() {
 	var ctx = document.createElement('canvas').getContext('2d')
-	var image_data = getResizedImageData(original_image, ctx, 200)
+	var image_data = getResizedImageData(original_image, ctx, 100)
 
 	var colors = []
-	for (var i = 0; i < image_data.data.length; i+=4)
-		colors.push(image_data.data.slice(i, i+3))
+	for (var i = 0; i < image_data.data.length; i+=4) {
+		var [r,g,b] = image_data.data.slice(i,i+3)
+		colors.push([r,g,b])
+	}
+	colors = colors.map(v=>v.map(srgbToLinear)).map(linearToOklab)
 
 	var num_colors = document.getElementById("k_means_k").value
-	var num_iterations = 10
+	var generatePalette = {"k-means": kMeansPalette, "median-cut": medianCutPalette}[document.getElementById("quantization_dropdown").value]
+	var num_iterations = 50
 
-	setPalette(kMeansPalette(num_colors, colors, num_iterations))
+	// TODO
+	setPalette(generatePalette(num_colors, colors, num_iterations).map(oklabToLinear).map(v=>v.map(linearToSrgb)))
+}
+
+function medianCutPalette(num_colors, colors)
+{
+	// first box contains all colors
+	var boxes = [colors]
+	while (boxes.length < num_colors) {
+		// find axis with the highest mean square error in any box
+		var [max_box, max_axis, max_mse] = [0, 0, -1]
+		for (var box_idx = 0; box_idx < boxes.length; box_idx++) {
+			var box = boxes[box_idx]
+			for (var axis = 0; axis < 3; axis++){
+				// calculate mean of axis for box
+				var sum = 0
+				for (var i = 0; i < box.length; i++)
+					sum += box[i][axis]
+				var mu = sum / box.length
+				// calculate mse
+				var mse = 0
+				for (var i = 0; i < box.length; i++)
+					mse += (box[i][axis] - mu)*(box[i][axis] - mu)
+
+				if (mse > max_mse) {
+					max_mse = mse
+					max_box = box_idx
+					max_axis = axis
+				}
+			}
+		}
+
+		// sort the max_box by that max_axis (highest mse)
+		boxes[max_box].sort((a,b) => a[max_axis]-b[max_axis])
+		// split on median
+		boxes.push(boxes[max_box].slice(Math.floor(boxes[max_box].length/2), boxes[max_box].length))
+		boxes[max_box] = boxes[max_box].slice(0, Math.floor(boxes[max_box].length/2)-1)
+	}
+
+	// calculate the average for each box to get the final colors
+	var output = []
+	for (var box of boxes) {
+		output.push(mean(box))
+	}
+
+	return output
+}
+
+function mean(color_array) {
+	var sum = [0,0,0]
+	for (var c of color_array)
+		sum = sum.map((v,i) => v + c[i])
+
+	return sum.map(v => v/color_array.length)
 }
 
 function setPalette(pal)
