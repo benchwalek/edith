@@ -50,7 +50,7 @@ window.onload = function () {
 	setPalette(default_palette)
 	document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
 	document.getElementById("drop-zone").addEventListener("drop", dropHandler)
-	document.getElementById("options").addEventListener("change", () => process())
+	document.querySelectorAll(".process-on-change").forEach(e => e.addEventListener("change", () => process()))
 	document.getElementById("reset_input_button").addEventListener("click", unloadImage)
 	document.getElementById("download_button").addEventListener("click", downloadResult)
 	document.getElementById("file_input").addEventListener("change", openHandler)
@@ -58,6 +58,21 @@ window.onload = function () {
 	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
 	document.getElementById("k_means_button").addEventListener("click", runQuantization)
 	document.getElementById("load_palette_button").addEventListener("click", loadPalette)
+
+	function setColorTab(ev) {
+		this.parentNode.querySelector(".active").classList.remove("active")
+		this.parentNode.parentNode.querySelectorAll(".tab-content").forEach(e => e.classList.add("hidden"))
+		var own_id = this.id
+		this.classList.add("active")
+		// document.querySelectorAll(".tab-content").forEach(e => e.classList.add("hidden"))
+		console.log(own_id)
+		document.getElementsByClassName(own_id)[0].classList.remove("hidden")
+	}
+
+	document.getElementById("from-palette-tab").addEventListener("click", setColorTab)
+	document.getElementById("from-image-tab").addEventListener("click", setColorTab)
+	document.getElementById("preprocessing-tab").addEventListener("click", setColorTab)
+	document.getElementById("dithering-tab").addEventListener("click", setColorTab)
 
 	visualizePalette()
 }
