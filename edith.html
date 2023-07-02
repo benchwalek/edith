@@ -43,11 +43,11 @@
 					</div>
 					<div class="tab-content from-image-tab hidden">
 						<div class="form-row">
-							<input type="text" id="k_means_k">
 							<select name="color quantization" id="quantization_dropdown">
 								<option>k-means</option>
 								<option>median-cut</option>
 							</select>
+							<input type="number" id="num-colors-input">
 							<button id="k_means_button">Gen</button>
 						</div>
 					</div>
@@ -92,6 +92,7 @@
 							<option value="bayer1">2x2 bayer</option>
 							<option value="bayer2">4x4 bayer</option>
 							<option value="bayer3">8x8 bayer</option>
+							<option value="blue_noise">blue noise</option>
 						</select>
 					</div>
 				</div>
