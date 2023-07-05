@@ -262,3 +262,26 @@ input[type="color"]::-moz-color-swatch
 	display: flex;
 	flex-direction: column;
 }
+
+#palette-selector {
+/*  width: 20em;*/
+  vertical-align: center;
+  height: 8em;
+  overflow-x: scroll;
+  white-space: nowrap;
+}
+
+.color-swatch {
+	outline: solid 1px;
+  width: 4.5em;
+  height: 4.5em;
+  display: inline-flex;
+  flex-wrap: wrap;
+  vertical-align: top;
+  margin: 1em;
+}
+
+.color-swatch-element {
+  flex: 1 1 auto;
+  width: 1em;
+}

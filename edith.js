@@ -50,6 +50,11 @@ var output_ctx
 
 window.onload = function () {
 	setPalette(default_palette)
+
+	for (var p in palettes_packed) {
+		addSwatch(packedRGBtoArray(palettes_packed[p]))
+	}
+
 	document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
 	document.getElementById("drop-zone").addEventListener("drop", dropHandler)
 	document.querySelectorAll(".process-on-change").forEach(e => e.addEventListener("change", () => process()))
@@ -59,7 +64,7 @@ window.onload = function () {
 	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("exposure_slider").value = 0; process()})
 	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
 	document.getElementById("k_means_button").addEventListener("click", runQuantization)
-	document.getElementById("load_palette_button").addEventListener("click", loadPalette)
+	// document.getElementById("load_palette_button").addEventListener("click", loadPalette)
 
 	function setColorTab(ev) {
 		this.parentNode.querySelector(".active").classList.remove("active")
@@ -429,6 +434,21 @@ function kMeansPalette(k, colors, iterations)
 	}
 
 	return centers
+}
+
+function addSwatch (colors) {
+	var swatch = document.createElement("div")
+	swatch.className = "color-swatch";
+	var divs = []
+	for (var i = 0; i < colors.length; i++) {
+		var color_div = document.createElement("div")
+		color_div.className = "color-swatch-element"
+		color_div.style = "background-color: "+rgbToHex(...colors[i]);
+		divs.push(color_div)
+	}
+	swatch.replaceChildren(...divs)
+	swatch.addEventListener("click", () => setPalette(colors))
+	document.getElementById("palette-selector").appendChild(swatch)
 }
 
 function argmin(arr) {
