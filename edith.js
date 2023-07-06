@@ -68,7 +68,7 @@ window.onload = function () {
 	document.getElementById("file_input").addEventListener("change", openHandler)
 	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("exposure_slider").value = 0; process()})
 	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
-	document.getElementById("k_means_button").addEventListener("click", runQuantization)
+	document.getElementById("quant-button").addEventListener("click", runQuantization)
 	// document.getElementById("load_palette_button").addEventListener("click", loadPalette)
 
 	function setColorTab(ev) {
@@ -85,6 +85,17 @@ window.onload = function () {
 	document.getElementById("from-image-tab").addEventListener("click", setColorTab)
 	document.getElementById("preprocessing-tab").addEventListener("click", setColorTab)
 	document.getElementById("dithering-tab").addEventListener("click", setColorTab)
+
+	document.querySelectorAll(".minus-btn").forEach(el => el.addEventListener("click", function (ev) {
+		var input = this.parentNode.querySelector("input")
+		var value = parseInt(input.value)
+		input.value = Math.max(value - 1, 2)
+	}))
+	document.querySelectorAll(".plus-btn").forEach(el => el.addEventListener("click", function (ev) {
+		var input = this.parentNode.querySelector("input")
+		var value = parseInt(input.value)
+		input.value = Math.min(value + 1, 64)
+	}))
 
 	visualizePalette()
 }
@@ -304,7 +315,7 @@ function runQuantization() {
 	colors = colors.map(v=>v.map(srgbToLinear)).map(linearToOklab)
 
 	var num_colors = document.getElementById("num-colors-input").value
-	var generatePalette = {"k-means": kMeansPalette, "median-cut": medianCutPalette}[document.getElementById("quantization_dropdown").value]
+	var generatePalette = {"k-means": kMeansPalette, "median-cut": medianCutPalette}[document.getElementById("quant-dropdown").value]
 	var num_iterations = 50
 
 	// TODO

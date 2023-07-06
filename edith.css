@@ -1,5 +1,6 @@
 :root {
   --bg-color: #fffdf2;
+  --bg-color-2: #443;
   --text-color: #000;
   --accent-color: #ea3726;
   --border-radius: 20px;
@@ -7,7 +8,7 @@
 
 body {
 	margin: 0;
-	background-color: #443;
+	background-color: var(--bg-color-2);
 }
 
 #options {
@@ -15,7 +16,7 @@ body {
 	border-radius: 0px var(--border-radius) 0px 0px;
 	flex-grow: 1;
 	flex-shrink: 0;
-	background-color: #443;
+	background-color: var(--bg-color-2);
 	color: var(--text-color);
 }
 
@@ -31,7 +32,7 @@ body {
 	image-rendering: pixelated;
 }
 
-.hidden {display: none}
+.hidden {display: none !important}
 
 #inimg {
 	height: 0;
@@ -150,13 +151,13 @@ input[type="color"] {
 
 input[type="color"]::-webkit-color-swatch
 {
-	border: solid 1px;
+	border: solid 1px var(--bg-color-2);
 	border-radius: 10px;
 }
 
 input[type="color"]::-moz-color-swatch
 {
-	border: solid 1px;
+	border: solid 1px var(--bg-color-2);
 	border-radius: 10px;
 }
 
@@ -219,7 +220,7 @@ input[type="color"]::-moz-color-swatch
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
-	background-color: #443;
+	background-color: var(--bg-color-2);
 }
 
 .tab-container > .tab-title {
@@ -239,7 +240,7 @@ input[type="color"]::-moz-color-swatch
 	padding-top: 6px;
 	padding-bottom: 4px;
 	margin-left: 4px;
-	width: 7em;
+	width: 110px;
 	appearance: none;
 	background-color: var(--bg-color);
 	border: none;
@@ -284,4 +285,62 @@ input[type="color"]::-moz-color-swatch
 .color-swatch-element {
   flex: 1 1 auto;
   width: 1em;
+}
+
+.number-stepper {
+	display: flex;
+	flex: 1 1 auto;
+	height: 4em;
+/*	height: 4em;*/
+	/*width: 4em;
+	height: 1em;*/
+}
+.number-stepper > input {
+	font-size: 16pt;
+	width: 110px;
+	text-align: center;
+	border: 1px solid var(--bg-color-2);
+}
+.minus-btn, .plus-btn {
+	font-size: 20pt;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border: solid 1px var(--bg-color-2);
+}
+.minus-btn:hover, .plus-btn:hover {
+	background-color: ;
+}
+.minus-btn {
+	border-radius: var(--border-radius) 0 0 var(--border-radius);
+	border-right: 0;
+}
+.plus-btn {
+	border-radius: 0 var(--border-radius) var(--border-radius) 0;
+	border-left: 0;
+}
+
+.from-image-tab {
+	display: flex;
+	gap: 5px;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+#quant-button {
+	width: 110px;
+	border: solid 1px var(--bg-color-2);
+	border-radius: calc(var(--border-radius)/2);
+}
+
+#quant-dropdown {
+	appearance: none;
+	padding: 1px;
+	padding-left: 4px;
+	text-align: center;
+	width: 110px;
+	border: solid 1px var(--bg-color-2);
+	border-radius: calc(var(--border-radius)/2);
 }
