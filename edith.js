@@ -91,11 +91,13 @@ window.onload = function () {
 	document.querySelectorAll(".minus-btn").forEach(el => el.addEventListener("click", function (ev) {
 		var input = this.parentNode.querySelector("input")
 		var value = parseInt(input.value)
+		if (isNaN(value)) return
 		input.value = Math.max(value - 1, 2)
 	}))
 	document.querySelectorAll(".plus-btn").forEach(el => el.addEventListener("click", function (ev) {
 		var input = this.parentNode.querySelector("input")
 		var value = parseInt(input.value)
+		if (isNaN(value)) return
 		input.value = Math.min(value + 1, 64)
 	}))
 
