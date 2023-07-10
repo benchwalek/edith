@@ -40,6 +40,8 @@ var palettes_packed = {
 	"c64": [0x000000, 0x626262, 0x898989, 0xadadad, 0xffffff, 0x9f4e44, 0xcb7e75, 0x6d5412, 0xa1683c, 0xc9d487, 0x9ae29b, 0x5cab5e, 0x6abfc6, 0x887ecb, 0x50459b, 0xa057a3]
 }
 
+var color_change_timer = []
+
 
 var default_palette = packedRGBtoArray(palettes_packed["bw"])
 var palette
@@ -530,7 +532,8 @@ function visualizePalette()
 		var picker = document.createElement("input")
 		picker.type = "color"
 		picker.value = rgbToHex(...palette[i].map(linearToSrgb))
-		picker.addEventListener("change", ((i) => function (ev) {palette[i] = hexToRgb(this.value).map(srgbToLinear); process()})(i))
+		picker.addEventListener("change", ((i) => function (ev) {clearTimeout(color_change_timer[i]);
+																 color_change_timer[i] = setTimeout(() => {palette[i] = hexToRgb(this.value).map(srgbToLinear); process()}, 100) })(i))
 		pickers.push(picker)
 	}
 	document.getElementById("palette").replaceChildren(...pickers)
