@@ -169,7 +169,7 @@ input[type="color"]::-moz-color-swatch
 	grid-template-areas:
 		"input-pane palette-pane output-pane"
 		"option-pane palette-pane output-pane";
-	height: 100vh;
+	min-height: 100vh;
 	min-height: -webkit-fill-available;
 }
 
