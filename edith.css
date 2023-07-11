@@ -178,6 +178,7 @@ input[type="color"]::-moz-color-swatch
 }
 
 .input-pane {
+	min-width: 350px;
 	font-family: "EB Garamond";
 	font-weight: bold;
 	-webkit-font-smoothing: none;
@@ -185,7 +186,7 @@ input[type="color"]::-moz-color-swatch
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 5vh;
+	font-size: 30pt;
 	grid-area: input-pane;
 	border-radius: 0px 0px var(--border-radius) 0px;
 	position: relative;
@@ -288,30 +289,32 @@ input[type="color"]::-moz-color-swatch
 }
 
 .number-stepper {
+	width: 100%;
 	display: flex;
-	flex: 1 1 auto;
-	height: 4em;
+/*	height: 4em;*/
 /*	height: 4em;*/
 	/*width: 4em;
 	height: 1em;*/
 }
+.number-stepper > * {
+	flex: 1 1 auto;
+}
 .number-stepper > input {
 	font-size: 16pt;
-	width: 110px;
+	padding: 0;
+	min-width: 1em;
 	text-align: center;
 	border: 1px solid var(--bg-color-2);
 }
 .minus-btn, .plus-btn {
 	font-size: 20pt;
-	padding-left: 20px;
-	padding-right: 20px;
+/*	padding-left: 8%;
+	padding-right: 8%;
 	padding-top: 10px;
 	padding-bottom: 10px;
-	border: solid 1px var(--bg-color-2);
+*/	border: solid 1px var(--bg-color-2);
 }
-.minus-btn:hover, .plus-btn:hover {
-	background-color: ;
-}
+
 .minus-btn {
 	border-radius: var(--border-radius) 0 0 var(--border-radius);
 	border-right: 0;
@@ -343,4 +346,30 @@ input[type="color"]::-moz-color-swatch
 	width: 110px;
 	border: solid 1px var(--bg-color-2);
 	border-radius: calc(var(--border-radius)/2);
+}
+
+#not-supported-overlay {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	font-size: xx-large;
+	background-color: var(--bg-color);
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: 1000;
+}
+
+.wrapper {display: none}
+
+@media (min-width: 700px) {
+	#not-supported-overlay {
+		display: none;
+	}
+	.wrapper {
+		display: grid;
+	}
 }
