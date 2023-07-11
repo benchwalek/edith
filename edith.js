@@ -641,21 +641,19 @@ function diffusion_dither(pixels, kernel) {
 
 	var e = []
 	for (var i = 0; i < kernel_rows; i++) {
-		var tmp = new Array(pixels.width)
-		for (var j = 0; j < tmp.length; j++)
-			tmp[j] = [0,0,0]
+		var tmp = new Array(pixels.width*3).fill(0)
+		// for (var j = 0; j < tmp.length; j++)
+		// 	tmp[j] = 0
 		e.push(tmp)
 	}
 
 	for (var row = 0; row < pixels.height; row++) {
-		e.push([])
-		for (var i = 0; i < pixels.width; i++)
-			e[e.length-1].push([0,0,0])
+		e.push(new Array(pixels.width*3).fill(0))
 
 		for (var col = 0; col < pixels.width; col++) {
 			var color = pixels.getPixel(col, row)
 
-			var adj_color = color.map((v,i) => v+e[0][col][i])
+			var adj_color = color.map((v,i) => v+e[0][col*3+i])
 
 			var nearest = find_nearest_color(adj_color, palette)
 			pixels.setPixel(col, row, nearest)
@@ -665,9 +663,8 @@ function diffusion_dither(pixels, kernel) {
 			for (var k of kernel) {
 				if (col+k[0] < 0 || col+k[0] >= pixels.width)
 					continue
-				for (var j = 0; j < e[k[1]][col+k[0]].length; j++)
-					e[k[1]][col+k[0]][j] += err[j]*k[2]
-				// e[k[1]][col+k[0]] = e[k[1]][col+k[0]].map((v,i) => v+err.map((w) => w*k[2])[i])
+				for (var j = 0; j < 3; j++)
+					e[k[1]][(col+k[0])*3+j] += err[j]*k[2]
 			}
 		}
 		e.shift()
