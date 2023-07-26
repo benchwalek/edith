@@ -52,12 +52,12 @@ small {
 
 .btn {
 	position: absolute;
-	right: 0.75em;
-	top: 0.75em;
+	right: 5px;
+	top: 5px;
 	font-size: var(--border-radius);
 	border-radius: 50%;
-	width: 1.5em;
-	height: 1.5em;
+	width: 30px;
+	height: 30px;
 	opacity: 50%;
 	border: none;
 	color: var(--text-color);
@@ -165,7 +165,7 @@ input[type="color"]::-moz-color-swatch
 	display: grid;
 	gap: 5px;
 	grid-template-columns: 1fr 90px 3fr;
-	grid-template-rows: 50% 1fr;
+	grid-template-rows: 38% 1fr;
 	grid-template-areas:
 		"input-pane palette-pane output-pane"
 		"option-pane palette-pane output-pane";
@@ -261,10 +261,14 @@ input[type="color"]::-moz-color-swatch
 	background-color: var(--bg-color);
 	border-radius: 0 0 var(--border-radius) 0;
 	padding: 1em;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
 }
 
 .tab-section {
-	flex: 1;
+	flex: 1 1;
+	min-height: 13em;
 	display: flex;
 	flex-direction: column;
 }
