@@ -78,6 +78,11 @@ small {
 	display: none;
 }
 
+input[disabled] {
+/*	filter: blur(1px);*/
+filter: opacity(50%);
+}
+
 #reset_input_button::after {
 	display: inline-block;
 	content: "\00d7";

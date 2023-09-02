@@ -72,7 +72,7 @@ window.onload = function () {
 	document.getElementById("exposure_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("exposure_slider").value = 0; process()})
 	document.getElementById("contrast_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("contrast_slider").value = 0; process()})
 	document.getElementById("quant-button").addEventListener("click", runQuantization)
-	// document.getElementById("load_palette_button").addEventListener("click", loadPalette)
+	document.getElementById("strength_slider").labels[0].addEventListener("dblclick", () => {document.getElementById("strength_slider").value = spread; process()})
 
 	function setColorTab(ev) {
 		this.parentNode.querySelector(".active").classList.remove("active")
@@ -130,26 +130,29 @@ function process() {
 
 	pixels.inplaceMap(srgbToLinear)
 
+	document.getElementById("strength_slider").disabled = false
 	switch (method) {
 	case "random":
-		random_dither(pixels)
+		random_dither(pixels, document.getElementById("strength_slider").value)
 		break;
 	case "bayer1":
 	case "bayer2":
 	case "bayer3":
-		map_dither(pixels, threshold_maps[method])
+		map_dither(pixels, threshold_maps[method], document.getElementById("strength_slider").value)
 		break;
 	case "blue_noise":
-		map_dither(pixels, threshold_maps[method])
+		map_dither(pixels, threshold_maps[method], document.getElementById("strength_slider").value)
 		break;
 	case "floyd-steinberg":
 	case "shiau-fan":
 	case "atkinson":
 	case "jarvis-judice-ninke":
 	case "stucki":
+		document.getElementById("strength_slider").disabled = true
 		diffusion_dither(pixels, dither_kernels[method])
 		break;
 	case "threshold":
+		document.getElementById("strength_slider").disabled = true
 		no_dither(pixels)
 	}
 
@@ -385,6 +388,7 @@ function setPalette(pal)
 	palette = palette.map(v=>v.map(srgbToLinear))
 
 	spread = calculateSpread(palette)
+	document.getElementById("strength_slider").value = spread
 
 	palette = colorSortHilbert(palette)
 	visualizePalette()
@@ -606,10 +610,10 @@ function downloadResult() {
 }
 
 
-function map_dither(pixels, threshold_map) {
+function map_dither(pixels, threshold_map, strength) {
 	for (var row = 0; row < pixels.height; row++) {
 		for (var col = 0; col < pixels.width; col++) {
-			var color = pixels.getPixel(col, row, 0).map((v) => v-spread*(threshold_map.at(col,row)/256-.5))
+			var color = pixels.getPixel(col, row, 0).map((v) => v-strength*(threshold_map.at(col,row)/256-.5))
 			var nearest = find_nearest_color(color, palette)
 			pixels.setPixel(col, row, nearest)
 		}
@@ -626,11 +630,11 @@ function no_dither(pixels) {
 	}
 }
 
-function random_dither(pixels) {
+function random_dither(pixels, strength) {
 	for (var row = 0; row < pixels.height; row++) {
 		for (var col = 0; col < pixels.width; col++) {
 			var color = pixels.getPixel(col, row)
-			var nearest = find_nearest_color(color.map(v => v - (Math.random()-.5)*spread), palette)
+			var nearest = find_nearest_color(color.map(v => v - (Math.random()-.5)*strength), palette)
 
 			pixels.setPixel(col, row, nearest)
 		}
