@@ -154,6 +154,12 @@ input[type="color"] {
 	padding: 0;
 }
 
+.add_btn {
+	width: 70px;
+	height: 20px;
+	border-radius: 10px;
+}
+
 input[type="color"]::-webkit-color-swatch
 {
 	border: solid 1px var(--bg-color-2);
@@ -385,4 +391,19 @@ input[type="color"]::-moz-color-swatch
 	.wrapper {
 		display: grid;
 	}
+}
+
+.pal_entry {
+	display: flex;
+}
+
+.del_btn::after {
+	content: "\00d7";
+}
+
+.del_btn {
+	background: none;
+	border: none;
+/*	appearance: none;*/
+	padding: 0;
 }

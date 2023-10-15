@@ -541,9 +541,20 @@ function visualizePalette()
 		picker.value = rgbToHex(...palette[i].map(linearToSrgb))
 		picker.addEventListener("change", ((i) => function (ev) {clearTimeout(color_change_timer[i]);
 																 color_change_timer[i] = setTimeout(() => {palette[i] = hexToRgb(this.value).map(srgbToLinear); process()}, 100) })(i))
+		var tmp = document.createElement("div")
+		tmp.classList.add("pal_entry")
+		var delete_btn = document.createElement("button")
+		delete_btn.classList.add("del_btn")
+		delete_btn.addEventListener("click", ((i) => function (ev) {palette.splice(i,1); color_change_timer.splice(i, 1); visualizePalette(); process()})(i))
+		tmp.replaceChildren(picker, delete_btn)
+		picker = tmp
 		pickers.push(picker)
 	}
-	document.getElementById("palette").replaceChildren(...pickers)
+	var add_btn = document.createElement("button")
+	add_btn.innerHTML = "+"
+	add_btn.classList.add("add_btn")
+	add_btn.addEventListener("click", () => {palette.push([0,0,0]); visualizePalette()})
+	document.getElementById("palette").replaceChildren(add_btn, ...pickers)
 }
 
 function dragOverHandler(ev) {
