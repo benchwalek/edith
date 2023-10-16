@@ -545,7 +545,7 @@ function visualizePalette()
 		tmp.classList.add("pal_entry")
 		var delete_btn = document.createElement("button")
 		delete_btn.classList.add("del_btn")
-		delete_btn.addEventListener("click", ((i) => function (ev) {palette.splice(i,1); color_change_timer.splice(i, 1); visualizePalette(); process()})(i))
+		delete_btn.addEventListener("click", ((i) => function (ev) {if (palette.length <= 2) return; palette.splice(i,1); color_change_timer.splice(i, 1); visualizePalette(); process()})(i))
 		tmp.replaceChildren(picker, delete_btn)
 		picker = tmp
 		pickers.push(picker)
@@ -553,7 +553,7 @@ function visualizePalette()
 	var add_btn = document.createElement("button")
 	add_btn.innerHTML = "+"
 	add_btn.classList.add("add_btn")
-	add_btn.addEventListener("click", () => {palette.push([0,0,0]); visualizePalette()})
+	add_btn.addEventListener("click", () => {palette.push([0,0,0].map(() => Math.floor(srgbToLinear(Math.random()*256)))); visualizePalette(); process()})
 	document.getElementById("palette").replaceChildren(add_btn, ...pickers)
 }
 
