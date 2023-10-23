@@ -405,6 +405,15 @@ input[type="color"]::-moz-color-swatch
 
 .add_btn {
   margin-left: 1.5px;
+  margin-top: 2px;
+  width: 55px;
+	border: solid 1px var(--bg-color-2);
+	border-radius: calc(var(--border-radius)/2);
+	height: 20px;
+}
+
+.sort_btn {
+  margin-left: 1.5px;
   width: 55px;
 	border: solid 1px var(--bg-color-2);
 	border-radius: calc(var(--border-radius)/2);

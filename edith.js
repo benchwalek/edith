@@ -550,11 +550,16 @@ function visualizePalette()
 		picker = tmp
 		pickers.push(picker)
 	}
+	// var sort_btn = document.createElement("button")
+	// sort_btn.innerHTML = "sort"
+	// sort_btn.classList.add("sort_btn")
+	// sort_btn.addEventListener("click", () => {palette = colorSortHilbert(palette); visualizePalette()})
 	var add_btn = document.createElement("button")
 	add_btn.innerHTML = "+"
 	add_btn.classList.add("add_btn")
 	add_btn.addEventListener("click", () => {palette.push([0,0,0].map(() => Math.floor(srgbToLinear(Math.random()*256)))); visualizePalette(); process()})
 	document.getElementById("palette").replaceChildren(add_btn, ...pickers)
+	// document.getElementById("palette").replaceChildren(sort_btn, add_btn, ...pickers)
 }
 
 function dragOverHandler(ev) {
