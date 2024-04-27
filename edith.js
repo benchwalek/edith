@@ -35,10 +35,12 @@ var palettes_packed = {
 	// "nopal-12": [0xe2e4df, 0xc5cfc4, 0xa8b5ae, 0x92929c, 0xffeced, 0xfbd4d2, 0xf1b4b4, 0xcca3a3, 0xf1eab6, 0xe4dba0, 0xcac18a, 0xaba47b],
 	// "steam-lords": [0x213b25, 0x3a604a, 0x4f7754, 0xa19f7c, 0x77744f, 0x775c4f, 0x603b3a, 0x3b2137, 0x170e19, 0x2f213b, 0x433a60, 0x4f5277, 0x65738c, 0x7c94a1, 0xa0b9ba, 0xc0d1cc],
 	"win16": [0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0xc0c0c0, 0xff0000, 0x00ff00, 0x0000ff, 0x808080, 0x008080, 0x800080, 0x808000, 0x000000, 0x800000, 0x008000, 0x000080],
-	"macintosh2": [0xffffff,0xffff00,0xff6500,0xdc0000,0xff0097,0x360097,0x0000ca,0x0097ff,0x00a800,0x006500,0x653600,0x976536,0xb9b9b9,0x868686,0x454545,0x000000],
+	"mac2": [0xffffff,0xffff00,0xff6500,0xdc0000,0xff0097,0x360097,0x0000ca,0x0097ff,0x00a800,0x006500,0x653600,0x976536,0xb9b9b9,0x868686,0x454545,0x000000],
 	"teletext": [0x000000,0xffffff,0xfffd33,0xff3016,0x0027fb,0x00f92c,0xff3ffc,0x00fcfe],
 	"c64": [0x000000, 0x626262, 0x898989, 0xadadad, 0xffffff, 0x9f4e44, 0xcb7e75, 0x6d5412, 0xa1683c, 0xc9d487, 0x9ae29b, 0x5cab5e, 0x6abfc6, 0x887ecb, 0x50459b, 0xa057a3],
 	"pico8": [0x000000,0x1d2b53,0x7e2553,0x008751,0xab5236,0x5f574f,0xc2c3c7,0xfff1e8,0xff004d,0xffa300,0xffec27,0x00e436,0x29adff,0x83769c,0xff77a8,0xffccaa],
+	"spectrum": [0x000000,0x0000d8,0x0000ff,0xd80000,0xff0000,0xd800d8,0xff00ff,0x00d800,0x00ff00,0x00d8d8,0x00ffff,0xd8d800,0xd8d8d8,0xffffff],
+	"picotron": [0x000000,0x6b332c,0x9f573d,0xef8b73,0xf5cdad,0xea3352,0xb1254c,0x742c52,0x452e38,0x5e5750,0x9e897b,0xc2c3c6,0xfcf1e9,0xf3b0c4,0xee7fa7,0xd130a6,0x202b50,0x305da6,0x49a2a0,0x56aaf8,0x85dcf3,0xb79bda,0x817699,0x6f5093,0x275258,0x3a8556,0x4faf5c,0x68e054,0xa5ea5f,0xfced57]
 }
 
 var color_change_timer = []
@@ -60,7 +62,7 @@ window.onload = function () {
 	setPalette(default_palette)
 
 	for (var p in palettes_packed) {
-		addSwatch(packedRGBtoArray(palettes_packed[p]))
+		addSwatch(p, packedRGBtoArray(palettes_packed[p]))
 	}
 
 	document.getElementById("drop-zone").addEventListener("dragover", dragOverHandler)
@@ -461,7 +463,7 @@ function kMeansPalette(k, colors, iterations)
 	return centers
 }
 
-function addSwatch (colors) {
+function addSwatch (name, colors) {
 	var swatch = document.createElement("div")
 	swatch.className = "color-swatch";
 	var divs = []
@@ -471,6 +473,10 @@ function addSwatch (colors) {
 		color_div.style = "background-color: "+rgbToHex(...colors[i]);
 		divs.push(color_div)
 	}
+	var overlay = document.createElement("div")
+	overlay.className = "color-swatch-overlay"
+	overlay.innerHTML = name
+	divs.push(overlay)
 	swatch.replaceChildren(...divs)
 	swatch.addEventListener("click", () => setPalette(colors))
 	document.getElementById("palette-selector").appendChild(swatch)
@@ -557,7 +563,7 @@ function visualizePalette()
 	var add_btn = document.createElement("button")
 	add_btn.innerHTML = "+"
 	add_btn.classList.add("add_btn")
-	add_btn.addEventListener("click", () => {palette.push([0,0,0].map(() => Math.floor(srgbToLinear(Math.random()*256)))); visualizePalette(); process()})
+	add_btn.addEventListener("click", () => {palette.unshift([0,0,0].map(() => Math.floor(srgbToLinear(Math.random()*256)))); visualizePalette(); process()})
 	document.getElementById("palette").replaceChildren(add_btn, ...pickers)
 	// document.getElementById("palette").replaceChildren(sort_btn, add_btn, ...pickers)
 }
