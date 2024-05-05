@@ -40,7 +40,7 @@ var palettes_packed = {
 	"c64": [0x000000, 0x626262, 0x898989, 0xadadad, 0xffffff, 0x9f4e44, 0xcb7e75, 0x6d5412, 0xa1683c, 0xc9d487, 0x9ae29b, 0x5cab5e, 0x6abfc6, 0x887ecb, 0x50459b, 0xa057a3],
 	"pico8": [0x000000,0x1d2b53,0x7e2553,0x008751,0xab5236,0x5f574f,0xc2c3c7,0xfff1e8,0xff004d,0xffa300,0xffec27,0x00e436,0x29adff,0x83769c,0xff77a8,0xffccaa],
 	"spectrum": [0x000000,0x0000d8,0x0000ff,0xd80000,0xff0000,0xd800d8,0xff00ff,0x00d800,0x00ff00,0x00d8d8,0x00ffff,0xd8d800,0xd8d8d8,0xffffff],
-	"picotron": [0x000000,0x6b332c,0x9f573d,0xef8b73,0xf5cdad,0xea3352,0xb1254c,0x742c52,0x452e38,0x5e5750,0x9e897b,0xc2c3c6,0xfcf1e9,0xf3b0c4,0xee7fa7,0xd130a6,0x202b50,0x305da6,0x49a2a0,0x56aaf8,0x85dcf3,0xb79bda,0x817699,0x6f5093,0x275258,0x3a8556,0x4faf5c,0x68e054,0xa5ea5f,0xfced57]
+	"picotron": [0x000000, 0x1d2b53, 0x7e2553, 0x008751, 0xab5236, 0x5f574f, 0xc2c3c7, 0xfff1e8, 0xff004d, 0xffa300, 0xffec27, 0x00e436, 0x29adff, 0x83769c, 0xff77a8, 0xffccaa, 0x1c5eac, 0x00a5a1, 0x754e97, 0x125359, 0x742f29, 0x492d38, 0xa28879, 0xffacc5, 0xc3004c, 0xeb6b00, 0x90ec42, 0x00b251, 0x64dff6, 0xbd9adf, 0xe40dab, 0xff856d]
 }
 
 var color_change_timer = []
@@ -48,6 +48,8 @@ var color_change_timer = []
 
 var default_palette = packedRGBtoArray(palettes_packed["bw"])
 var palette
+var srgb_palette
+var method
 var spread
 
 var dist3 = euclidean_dist3
@@ -120,7 +122,7 @@ function process() {
 	document.getElementById("size_input").value = size
 
 	var image_data = getResizedImageData(original_image, output_ctx, size)
-	var method = document.getElementById("method_dropdown").value
+	method = document.getElementById("method_dropdown").value
 
 	var pixels = new PixelData(image_data)
 
@@ -158,20 +160,20 @@ function process() {
 		no_dither(pixels)
 	}
 
-	pixels.inplaceMap(linearToSrgb)
+	// pixels.inplaceMap(linearToSrgb)
 
 	output_ctx.putImageData(pixels.asImageData(),0,0)
 	document.getElementById("outimg").src = output_ctx.canvas.toDataURL()
 }
 
 function srgbToLinear(s) {
-	s/=256
-	return (s <= .04045 ? s/12.92 : Math.pow(((s+0.055)/1.055), 2.4))*256
+	s/=255
+	return (s <= .04045 ? s/12.92 : Math.pow(((s+0.055)/1.055), 2.4))*255
 }
 
 function linearToSrgb(l) {
-	l/=256
-	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 1/2.4) - 0.055)*256
+	l/=255
+	return (l <= .0031308 ? l*12.92 : 1.055*Math.pow(l, 1/2.4) - 0.055)*255
 }
 
 var rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
@@ -225,7 +227,7 @@ function MortonToHilbert3D( morton, bits )
 }
 
 function linearToOklab(c) {
-	c=c.map(v=>v/256)
+	c=c.map(v=>v/255)
 	const l = 0.4122214708 * c[0] + 0.5363325363 * c[1] + 0.0514459929 * c[2];
 	const m = 0.2119034982 * c[0] + 0.6806995451 * c[1] + 0.1073969566 * c[2];
 	const s = 0.0883024619 * c[0] + 0.2817188376 * c[1] + 0.6299787005 * c[2];
@@ -254,7 +256,7 @@ function oklabToLinear(c) {
 		4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
 		-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
 		-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
-		].map(v=>v*256);
+		].map(v=>v*255);
 }
 
 function getBit(x, n)
@@ -280,13 +282,15 @@ function colorSortHilbert(colors)
 {
 	var codes = []
 	// colors are 8bit
-	for (var c of colors) {
-		codes.push([...c, MortonToHilbert3D(mortonCode3d(c), 8)])
-	}
-	codes.sort((a,b) => b[3]-a[3])
+	// for (var c of colors) {
+	// 	codes.push([...c, MortonToHilbert3D(mortonCode3d(c), 8)])
+	// }
+	for (var i = 0; i < colors.length; i++)
+		codes.push([i, MortonToHilbert3D(mortonCode3d(colors[i]), 8)])
+	codes.sort((a,b) => b[1]-a[1])
 
 	for (var i = 0; i < codes.length; i++)
-		codes[i] = codes[i].slice(0,3)
+		codes[i] = codes[i][0]
 	return codes
 }
 
@@ -386,13 +390,16 @@ function mean(color_array) {
 
 function setPalette(pal)
 {
-	palette = pal
-	palette = palette.map(v=>v.map(srgbToLinear))
+	srgb_palette = pal
+	palette = srgb_palette.map(v=>v.map(srgbToLinear))
 
 	spread = calculateSpread(palette)
 	document.getElementById("strength_slider").value = spread
 
-	palette = colorSortHilbert(palette)
+	perm = colorSortHilbert(palette)
+
+	palette = perm.map(i => palette[i])
+	srgb_palette = perm.map(i => srgb_palette[i])
 	visualizePalette()
 	process()
 }
@@ -516,13 +523,13 @@ function simple_dist3(c1, c2) {
   var dr=c1[0]-c2[0]
   var dg=c1[1]-c2[1]
   var db=c1[2]-c2[2]
-  return Math.sqrt((2 + r_mean / 256) * dr * dr + 4 * dg * dg + (2 + (255 - r_mean) / 256) * db * db);
+  return Math.sqrt((2 + r_mean / 255) * dr * dr + 4 * dg * dg + (2 + (255 - r_mean) / 255) * db * db);
 }
 
 function find_nearest_color(color, palette)
 {
 	var dist = typeof color == "number" ? dist1 : dist3
-	return palette[argmin(palette.map(c => dist(c, color)))]
+	return argmin(palette.map(c => dist(c, color)))
 }
 
 function thresholdTexture(size, array)
@@ -563,7 +570,7 @@ function visualizePalette()
 	var add_btn = document.createElement("button")
 	add_btn.innerHTML = "+"
 	add_btn.classList.add("add_btn")
-	add_btn.addEventListener("click", () => {palette.unshift([0,0,0].map(() => Math.floor(srgbToLinear(Math.random()*256)))); visualizePalette(); process()})
+	add_btn.addEventListener("click", () => {palette.unshift([0,0,0].map(() => Math.floor(srgbToLinear(Math.random()*255)))); visualizePalette(); process()})
 	document.getElementById("palette").replaceChildren(add_btn, ...pickers)
 	// document.getElementById("palette").replaceChildren(sort_btn, add_btn, ...pickers)
 }
@@ -625,7 +632,7 @@ function downloadResult() {
     var a = document.createElement("a");
     output_ctx.canvas.toBlob(blob => {
     	a.href = URL.createObjectURL(blob)
-	    a.download = "edith " + original_filename;
+	    a.download = original_filename.replace(/\.[^/.]+$/, "-chromadith-"+method+".png")
 	    a.click();
 	    URL.revokeObjectURL(a.href)
     })
@@ -635,7 +642,7 @@ function downloadResult() {
 function map_dither(pixels, threshold_map, strength) {
 	for (var row = 0; row < pixels.height; row++) {
 		for (var col = 0; col < pixels.width; col++) {
-			var color = pixels.getPixel(col, row, 0).map((v) => v-strength*(threshold_map.at(col,row)/256-.5))
+			var color = pixels.getPixel(col, row, 0).map((v) => v-strength*(threshold_map.at(col,row)/255-.5))
 			var nearest = find_nearest_color(color, palette)
 			pixels.setPixel(col, row, nearest)
 		}
@@ -684,7 +691,7 @@ function diffusion_dither(pixels, kernel) {
 
 			var nearest = find_nearest_color(adj_color, palette)
 			pixels.setPixel(col, row, nearest)
-			var err = Array.from(adj_color).map((v,i) => v-nearest[i])
+			var err = Array.from(adj_color).map((v,i) => v-palette[nearest][i])
 
 
 			for (var k of kernel) {
@@ -700,60 +707,57 @@ function diffusion_dither(pixels, kernel) {
 
 function PixelData(image_data) {
 	this.image_data = image_data
-	this.data = image_data.data
+	this.data = new Array(image_data.data.length/4)
 	this.width = image_data.width
 	this.height = image_data.height
 }
 PixelData.prototype.setPixel = function(x,y,v) {
-	if (typeof v == "number") {
-		this.image_data.data[y*this.width*4+x*4+0] = v
-		this.image_data.data[y*this.width*4+x*4+1] = v
-		this.image_data.data[y*this.width*4+x*4+2] = v
-	} else {
-		this.image_data.data[y*this.width*4+x*4+0] = v[0]
-		this.image_data.data[y*this.width*4+x*4+1] = v[1]
-		this.image_data.data[y*this.width*4+x*4+2] = v[2]
-	}
+	this.data[y*this.width+x] = v
 }
 PixelData.prototype.getPixel = function(x,y) {
 	var index = y*this.width*4+x*4
 	return this.image_data.data.slice(index, index+3)
 }
 PixelData.prototype.asImageData = function() {
-	this.image_data.data = this.data
+	for (var i = 0; i < this.image_data.data.length; i+=4) {
+		this.image_data.data[i] = srgb_palette[this.data[i>>2]][0]
+		this.image_data.data[i+1] = srgb_palette[this.data[i>>2]][1]
+		this.image_data.data[i+2] = srgb_palette[this.data[i>>2]][2]
+		this.image_data.data[i+3] = 255
+	}
 	return this.image_data
 }
 PixelData.prototype.inplaceMap = function(f) {
-	for (var i = 0; i < this.data.length; i++)
+	for (var i = 0; i < this.image_data.data.length; i++)
 		if (i%4!=3)
-			this.data[i] = f(this.data[i])
+			this.image_data.data[i] = f(this.image_data.data[i])
 }
-function MonochromePixelData(image_data) {
-	this.image_data = image_data
-	new_array = []
-	for (var i = 0; i < image_data.data.length; i+=4) {
-		new_array.push((image_data.data[i]+image_data.data[i+1]+image_data.data[i+2])/3)
-	}
-	this.data = new_array
-	this.width = image_data.width
-	this.height = image_data.height
-}
-MonochromePixelData.prototype.setPixel = function(x,y,v) {
-	this.data[y*this.width+x] = v
-}
-MonochromePixelData.prototype.getPixel = function(x,y) {
-	return this.data[y*this.width+x]
-}
-MonochromePixelData.prototype.asImageData = function() {
-	for (var i = 0; i < this.data.length; i++) {
-		this.image_data.data[i*4+0] = this.data[i]
-		this.image_data.data[i*4+1] = this.data[i]
-		this.image_data.data[i*4+2] = this.data[i]
-		this.image_data.data[i*4+3] = 255
-	}
-	return this.image_data
-}
-MonochromePixelData.prototype.inplaceMap = function(f) {
-	for (var i = 0; i < this.data.length; i++)
-		this.data[i] = f(this.data[i])
-}
+// function MonochromePixelData(image_data) {
+// 	this.image_data = image_data
+// 	new_array = []
+// 	for (var i = 0; i < image_data.data.length; i+=4) {
+// 		new_array.push((image_data.data[i]+image_data.data[i+1]+image_data.data[i+2])/3)
+// 	}
+// 	this.data = new_array
+// 	this.width = image_data.width
+// 	this.height = image_data.height
+// }
+// MonochromePixelData.prototype.setPixel = function(x,y,v) {
+// 	this.data[y*this.width+x] = v
+// }
+// MonochromePixelData.prototype.getPixel = function(x,y) {
+// 	return this.data[y*this.width+x]
+// }
+// MonochromePixelData.prototype.asImageData = function() {
+// 	for (var i = 0; i < this.data.length; i++) {
+// 		this.image_data.data[i*4+0] = this.data[i]
+// 		this.image_data.data[i*4+1] = this.data[i]
+// 		this.image_data.data[i*4+2] = this.data[i]
+// 		this.image_data.data[i*4+3] = 255
+// 	}
+// 	return this.image_data
+// }
+// MonochromePixelData.prototype.inplaceMap = function(f) {
+// 	for (var i = 0; i < this.data.length; i++)
+// 		this.data[i] = f(this.data[i])
+// }
