@@ -16,12 +16,8 @@
 - 🖼️ **Dithering Methods**  
   - Choose from various dithering techniques including:
     - Threshold
-    - Floyd-Steinberg
-    - Atkinson
-    - Jarvis-Judice-Ninke
-    - Stucki
-    - Shiau-Fan
-    - Ordered Bayer matrices (2x2, 4x4, 8x8)
+    - Error Diffusion (Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Shiau-Fan)
+    - Ordered Bayer (2x2, 4x4, 8x8)
     - Random and Blue Noise
 
 - 🔄 **Live Preview**  
@@ -49,8 +45,8 @@ Dependencies:
 
 ## Notes
 
-- Designed for desktop use. Mobile support is planned.
-- Color palette management and dithering are performed client-side.
+- Designed for desktop use.
+- Color palette management and dithering are performed client-side, all the data stays on your system!
 - Based on the HTML5 File API and Canvas.
 
 ## License
