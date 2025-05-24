@@ -1,6 +1,6 @@
 # Chromadith
 
-**Chromadith** is a browser-based image processing tool that transforms images into stylized dithering artworks using custom color palettes. Ideal for digital artists, retro computing fans, and pixel art enthusiasts.
+**Chromadith** is a browser-based image processing tool that transforms images into stylized dithering artworks using custom color palettes. Ideal for digital artists, retro computing fans, and pixel art enthusiasts. **[LIVE DEMO](http://chromadith.netlify.app)**
 
 ![Example Output](./example_mockup.png)
 
