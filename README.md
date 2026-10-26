@@ -1,29 +1,29 @@
 # Chromadith
 
-**Chromadith** is a browser-based image processing tool that transforms images into stylized dithering artworks using custom color palettes. Ideal for digital artists, retro computing fans, and pixel art enthusiasts. **[LIVE DEMO](http://chromadith.netlify.app)**
+**Chromadith** is a browser-based image processing tool that transforms images into dithering artworks using custom color palettes. **[LIVE DEMO](http://chromadith.netlify.app)**
 
 ![Example Output](./example_mockup.png)
 
 ## Features
 
-- 🎨 **Color Palette Selection**  
+- **Color Palette Selection**  
   - Choose from predefined palettes or extract colors directly from your image using quantization (k-means or median-cut).
   
-- 🧪 **Image Preprocessing**  
+- **Image Preprocessing**  
   - Adjust exposure and contrast.
   - Set output image size.
 
-- 🖼️ **Dithering Methods**  
-  - Choose from various dithering techniques including:
+- **Dithering Methods**  
+  - Choose from various dithering techniques:
     - Threshold
     - Error Diffusion (Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Shiau-Fan)
     - Ordered Bayer (2x2, 4x4, 8x8)
     - Random and Blue Noise
 
-- 🔄 **Live Preview**  
+- **Live Preview**  
   - See the dithered result update in real time.
 
-- ⬇️ **Download Output**  
+- **Download Output**  
   - Export the processed image directly as PNG.
 
 ## Usage
@@ -46,13 +46,8 @@ Dependencies:
 ## Notes
 
 - Designed for desktop use.
-- Color palette management and dithering are performed client-side, all the data stays on your system!
-- Based on the HTML5 File API and Canvas.
+- Color palette management and dithering are performed client-side, all the data stays on your system.
 
 ## License
 
 MIT License
-
----
-
-Created with ❤️ for art and code.
